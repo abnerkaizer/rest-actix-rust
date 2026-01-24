@@ -1,7 +1,7 @@
-use actix_web::{web, App, HttpServer};
 use actix_web::middleware::Logger;
-use env_logger::Env;
+use actix_web::{App, HttpServer, web};
 use dotenvy::dotenv;
+use env_logger::Env;
 
 use std::env;
 
@@ -9,8 +9,8 @@ mod controller;
 mod dto;
 mod model;
 mod repository;
-mod service;
 mod schema;
+mod service;
 
 use controller::person_controller;
 use service::db::{DbPool, create_pool};
@@ -27,8 +27,7 @@ async fn main() -> std::io::Result<()> {
 
     env_logger::init_from_env(Env::default().default_filter_or("info"));
 
-    let database_url =
-        env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     let pool = create_pool(&database_url);
 
@@ -41,10 +40,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(Logger::default())
             .app_data(app_state.clone())
-            .service(
-                web::scope("/api")
-                    .service(person_controller::routes()),
-            )
+            .service(web::scope("/api").service(person_controller::routes()))
     })
     .bind(("127.0.0.1", 8080))?
     .run()

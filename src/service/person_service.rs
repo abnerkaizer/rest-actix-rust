@@ -1,7 +1,5 @@
 use crate::{
-    model::person::Person,
-    repository::person_repository::PersonRepository,
-    service::db::DbPool,
+    model::person::Person, repository::person_repository::PersonRepository, service::db::DbPool,
 };
 
 use uuid::Uuid;
@@ -23,12 +21,33 @@ impl PersonService {
         PersonRepository::create(pool, name, cpf)
     }
 
-    pub fn find_by_id(
+    pub fn find_by_id(&self, pool: &DbPool, id: Uuid) -> Result<Person, diesel::result::Error> {
+        let mut conn = pool.get().expect("Failed to get DB connection");
+        PersonRepository::find_by_id(&mut conn, id)
+    }
+
+    pub fn delete(&self, pool: &DbPool, id: Uuid) -> Result<Person, diesel::result::Error> {
+        let mut conn = pool.get().expect("Failed to get DB connection");
+        PersonRepository::delete(&mut conn, id)
+    }
+
+    pub fn update_name(
         &self,
         pool: &DbPool,
         id: Uuid,
+        name: String,
     ) -> Result<Person, diesel::result::Error> {
         let mut conn = pool.get().expect("Failed to get DB connection");
-        PersonRepository::find_by_id(&mut conn, id)
+        PersonRepository::update_name(&mut conn, id, name)
+    }
+
+    pub fn update_cpf(
+        &self,
+        pool: &DbPool,
+        id: Uuid,
+        cpf: String,
+    ) -> Result<Person, diesel::result::Error> {
+        let mut conn = pool.get().expect("Failed to get DB connection");
+        PersonRepository::update_cpf(&mut conn, id, cpf)
     }
 }

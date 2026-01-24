@@ -19,6 +19,29 @@ pub struct NewPerson {
     cpf: String,
 }
 
+#[derive(AsChangeset)]
+#[diesel(table_name = persons)]
+pub struct UpdatePerson {
+    name: String,
+}
+
+#[derive(AsChangeset)]
+#[diesel(table_name = persons)]
+pub struct UpdateCpf {
+    cpf: String,
+}
+
+impl UpdateCpf {
+    pub fn new(cpf: String) -> Self {
+        Self { cpf }
+    }
+}
+
+impl UpdatePerson {
+    pub fn new(name: String) -> Self {
+        Self { name }
+    }
+}
 impl NewPerson {
     pub fn new(name: String, cpf: String) -> Self {
         Self {
