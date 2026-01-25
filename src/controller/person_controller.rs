@@ -2,7 +2,7 @@ use actix_web::{HttpResponse, Scope, delete, get, patch, post, web};
 use uuid::Uuid;
 
 use crate::{
-    AppState,
+    util::app_state::AppState,
     dto::person_dto::{PersonRequest, PersonResponse, UpdateCpfRequest, UpdatePersonRequest},
 };
 
@@ -17,8 +17,8 @@ pub fn routes() -> Scope {
 
 #[post("")]
 async fn create_person(state: web::Data<AppState>, body: web::Json<PersonRequest>) -> HttpResponse {
-    let pool = state.pool.clone();
-    let service = state.person_service.clone();
+    let pool = state.pool().clone();
+    let service = state.person_service().clone();
 
     let name = body.name.clone();
     let cpf = body.cpf.clone();
@@ -40,8 +40,8 @@ async fn create_person(state: web::Data<AppState>, body: web::Json<PersonRequest
 
 #[get("/{id}")]
 async fn get_person_by_id(state: web::Data<AppState>, path: web::Path<Uuid>) -> HttpResponse {
-    let pool = state.pool.clone();
-    let service = state.person_service.clone();
+    let pool = state.pool().clone();
+    let service = state.person_service().clone();
     let id = path.into_inner();
 
     let result = web::block(move || service.find_by_id(&pool, id)).await;
@@ -58,8 +58,8 @@ async fn get_person_by_id(state: web::Data<AppState>, path: web::Path<Uuid>) -> 
 
 #[delete("/{id}")]
 async fn delete(state: web::Data<AppState>, path: web::Path<Uuid>) -> HttpResponse {
-    let pool = state.pool.clone();
-    let service = state.person_service.clone();
+    let pool = state.pool().clone();
+    let service = state.person_service().clone();
     let id = path.into_inner();
 
     let result = web::block(move || service.delete(&pool, id)).await;
@@ -77,8 +77,8 @@ async fn patch_person_name(
     path: web::Path<Uuid>,
     body: web::Json<UpdatePersonRequest>,
 ) -> HttpResponse {
-    let pool = state.pool.clone();
-    let service = state.person_service.clone();
+    let pool = state.pool().clone();
+    let service = state.person_service().clone();
     let id = path.into_inner();
     let name = body.name.clone();
 
@@ -100,8 +100,8 @@ async fn patch_person_cpf(
     path: web::Path<Uuid>,
     body: web::Json<UpdateCpfRequest>,
 ) -> HttpResponse {
-    let pool = state.pool.clone();
-    let service = state.person_service.clone();
+    let pool = state.pool().clone();
+    let service = state.person_service().clone();
     let id = path.into_inner();
     let cpf = body.cpf.clone();
 
