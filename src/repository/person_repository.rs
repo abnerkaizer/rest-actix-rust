@@ -24,6 +24,10 @@ impl PersonRepository {
             .get_result(&mut conn)
     }
 
+    pub fn find_all(conn: &mut PgConnection) -> Result<Vec<Person>, diesel::result::Error> {
+        persons.load::<Person>(conn)
+    }
+
     pub fn find_by_id(conn: &mut PgConnection, person_id: Uuid) -> QueryResult<Person> {
         persons.find(person_id).first::<Person>(conn)
     }

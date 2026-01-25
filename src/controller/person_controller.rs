@@ -11,6 +11,7 @@ use crate::{
 pub fn routes() -> Scope {
     web::scope("/person")
         .service(create_person)
+        .service(find_all_people)
         .service(get_person_by_id)
         .service(update_person)
         .service(delete)
@@ -39,6 +40,31 @@ async fn create_person(state: web::Data<AppState>, body: web::Json<PersonRequest
         }
         Ok(Err(_)) => HttpResponse::InternalServerError().finish(),
         Err(_) => HttpResponse::InternalServerError().finish(),
+    }
+}
+
+#[get("")]
+async fn find_all_people(state: web::Data<AppState>) -> HttpResponse {
+    let pool = state.pool().clone();
+    let service = state.person_service().clone();
+
+    let result = web::block(move || service.find_all(&pool)).await;
+
+    match result {
+        Ok(Ok(people)) => {
+            let response: Vec<PersonResponse> = people
+                .into_iter()
+                .map(|person| PersonResponse {
+                    id: *person.id(),
+                    name: person.name().to_string(),
+                    cpf: person.cpf().to_string(),
+                })
+                .collect();
+
+            HttpResponse::Ok().json(response)
+        }
+        Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
+        _ => HttpResponse::InternalServerError().finish(),
     }
 }
 

@@ -21,6 +21,11 @@ impl PersonService {
         PersonRepository::create(pool, name, cpf)
     }
 
+    pub fn find_all(&self, pool: &DbPool) -> Result<Vec<Person>, diesel::result::Error> {
+        let mut conn = pool.get().expect("Failed to get DB connection");
+        PersonRepository::find_all(&mut conn)
+    }
+
     pub fn find_by_id(&self, pool: &DbPool, id: Uuid) -> Result<Person, diesel::result::Error> {
         let mut conn = pool.get().expect("Failed to get DB connection");
         PersonRepository::find_by_id(&mut conn, id)
