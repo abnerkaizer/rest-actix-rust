@@ -1,41 +1,26 @@
-use actix_web::{web, App, HttpServer};
-use actix_web::middleware::Logger;
-use env_logger::Env;
+use actix_web::web;
 use dotenvy::dotenv;
-
-use std::env;
+use env_logger::Env;
 
 use rest_actix_rust::{
-    controller::person_controller, 
-    service::db::create_pool, 
-    service::person_service::PersonService, 
-    util::app_state::AppState
+    AppConfig,
+    AppState,
+    PersonService,
+    create_pool,
+    start_http_server,
 };
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-
     env_logger::init_from_env(Env::default().default_filter_or("info"));
 
+    let config = AppConfig::from_env();
 
-    let database_url =
-        env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let pool = create_pool(&config.database_url());
+    let app_state = web::Data::new(
+        AppState::new(pool, PersonService::new())
+    );
 
-    let pool = create_pool(&database_url);
-    let state = AppState::new(pool, PersonService::new());
-    let app_state = web::Data::new(state);
-
-    HttpServer::new(move || {
-        App::new()
-            .wrap(Logger::default())
-            .app_data(app_state.clone())
-            .service(
-                web::scope("/api")
-                    .service(person_controller::routes()),
-            )
-    })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
+    start_http_server(config, app_state).await
 }

@@ -2,8 +2,8 @@ use actix_web::{HttpResponse, Scope, delete, get, patch, post, web};
 use uuid::Uuid;
 
 use crate::{
-    util::app_state::AppState,
     dto::person_dto::{PersonRequest, PersonResponse, UpdateCpfRequest, UpdatePersonRequest},
+    util::app_state::AppState,
 };
 
 pub fn routes() -> Scope {

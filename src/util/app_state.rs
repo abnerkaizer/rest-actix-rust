@@ -1,7 +1,4 @@
-use crate::{
-    service::db::DbPool,
-    service::person_service::PersonService
-};
+use crate::{service::db::DbPool, service::person_service::PersonService};
 
 pub struct AppState {
     pool: DbPool,
@@ -10,17 +7,17 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(pool: DbPool, person_service: PersonService) -> Self {
-        Self{
+        Self {
             pool,
             person_service,
         }
     }
 
-    pub fn pool(&self) -> DbPool{
+    pub fn pool(&self) -> DbPool {
         self.pool.clone()
     }
 
-    pub fn person_service(&self) -> PersonService{
+    pub fn person_service(&self) -> PersonService {
         self.person_service.clone()
     }
 }
