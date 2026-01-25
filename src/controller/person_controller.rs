@@ -1,4 +1,6 @@
+use crate::error::error_response::ErrorResponse;
 use actix_web::{HttpResponse, Scope, delete, get, patch, post, put, web};
+use cpf_util;
 use uuid::Uuid;
 
 use crate::{
@@ -25,7 +27,13 @@ async fn create_person(state: web::Data<AppState>, body: web::Json<PersonRequest
     let service = state.person_service().clone();
 
     let name = body.name.clone();
-    let cpf = body.cpf.clone();
+    let cpf = cpf_util::format(&body.cpf.clone());
+
+    if !cpf_util::is_valid(&cpf) {
+        return HttpResponse::BadRequest().json(ErrorResponse {
+            error: "CPF inválido".to_string(),
+        });
+    }
 
     let result = web::block(move || service.create_person(&pool, name, cpf)).await;
 
@@ -135,7 +143,13 @@ async fn patch_person_cpf(
     let pool = state.pool().clone();
     let service = state.person_service().clone();
     let id = path.into_inner();
-    let cpf = body.cpf.clone();
+    let cpf = cpf_util::format(&body.cpf.clone());
+
+    if !cpf_util::is_valid(&cpf) {
+        return HttpResponse::BadRequest().json(ErrorResponse {
+            error: "CPF inválido".to_string(),
+        });
+    }
 
     let result = web::block(move || service.update_cpf(&pool, id, cpf)).await;
 

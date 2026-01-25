@@ -16,7 +16,7 @@ env_logger = "0.11"
 diesel = { version = "2.3", features = ["postgres", "r2d2", "uuid"] }
 dotenvy = "0.15"
 
-validator = { version = "0.18", features = ["derive"] }
+cpf_util = "0.1.1"
 uuid = { version = "1", features = ["serde", "v4"] }
 
 [profile.release]
