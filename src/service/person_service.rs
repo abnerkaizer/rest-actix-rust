@@ -31,6 +31,17 @@ impl PersonService {
         PersonRepository::delete(&mut conn, id)
     }
 
+    pub fn update_person(
+        &self,
+        pool: &DbPool,
+        id: Uuid,
+        name: String,
+        cpf: String,
+    ) -> Result<Person, diesel::result::Error> {
+        let mut conn = pool.get().expect("Failed to get DB connection");
+        PersonRepository::update_person(&mut conn, id, name, cpf)
+    }
+
     pub fn update_name(
         &self,
         pool: &DbPool,

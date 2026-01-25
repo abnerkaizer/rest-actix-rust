@@ -2,7 +2,7 @@ use diesel::prelude::*;
 use uuid::Uuid;
 
 use crate::{
-    model::person::{NewPerson, Person, UpdateCpf, UpdatePerson},
+    model::person::{NewPerson, Person, UpdateCpf, UpdateName, UpdatePerson},
     schema::persons::dsl::*,
     service::db::DbPool,
 };
@@ -32,12 +32,25 @@ impl PersonRepository {
         diesel::delete(persons.find(person_id)).get_result(conn)
     }
 
+    pub fn update_person(
+        conn: &mut PgConnection,
+        person_id: Uuid,
+        new_name: String,
+        new_cpf: String,
+    ) -> QueryResult<Person> {
+        let changes = UpdatePerson::new(new_name, new_cpf);
+
+        diesel::update(persons.find(person_id))
+            .set(&changes)
+            .get_result::<Person>(conn)
+    }
+
     pub fn update_name(
         conn: &mut PgConnection,
         person_id: Uuid,
         new_name: String,
     ) -> QueryResult<Person> {
-        let changes = UpdatePerson::new(new_name);
+        let changes = UpdateName::new(new_name);
 
         diesel::update(persons.find(person_id))
             .set(&changes)

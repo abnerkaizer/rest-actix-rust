@@ -1,8 +1,10 @@
-use actix_web::{HttpResponse, Scope, delete, get, patch, post, web};
+use actix_web::{HttpResponse, Scope, delete, get, patch, post, put, web};
 use uuid::Uuid;
 
 use crate::{
-    dto::person_dto::{PersonRequest, PersonResponse, UpdateCpfRequest, UpdatePersonRequest},
+    dto::person_dto::{
+        PersonRequest, PersonResponse, UpdateCpfRequest, UpdateNameRequest, UpdatePersonRequest,
+    },
     util::app_state::AppState,
 };
 
@@ -10,6 +12,7 @@ pub fn routes() -> Scope {
     web::scope("/person")
         .service(create_person)
         .service(get_person_by_id)
+        .service(update_person)
         .service(delete)
         .service(patch_person_name)
         .service(patch_person_cpf)
@@ -30,6 +33,7 @@ async fn create_person(state: web::Data<AppState>, body: web::Json<PersonRequest
             let response = PersonResponse {
                 id: *person.id(),
                 name: person.name().to_string(),
+                cpf: person.cpf().to_string(),
             };
             HttpResponse::Created().json(response)
         }
@@ -50,6 +54,7 @@ async fn get_person_by_id(state: web::Data<AppState>, path: web::Path<Uuid>) -> 
         Ok(Ok(person)) => HttpResponse::Ok().json(PersonResponse {
             id,
             name: person.name().to_string(),
+            cpf: person.cpf().to_string(),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
@@ -75,7 +80,7 @@ async fn delete(state: web::Data<AppState>, path: web::Path<Uuid>) -> HttpRespon
 async fn patch_person_name(
     state: web::Data<AppState>,
     path: web::Path<Uuid>,
-    body: web::Json<UpdatePersonRequest>,
+    body: web::Json<UpdateNameRequest>,
 ) -> HttpResponse {
     let pool = state.pool().clone();
     let service = state.person_service().clone();
@@ -88,6 +93,7 @@ async fn patch_person_name(
         Ok(Ok(person)) => HttpResponse::Ok().json(PersonResponse {
             id: *person.id(),
             name: person.name().to_string(),
+            cpf: person.cpf().to_string(),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
@@ -111,6 +117,32 @@ async fn patch_person_cpf(
         Ok(Ok(person)) => HttpResponse::Ok().json(PersonResponse {
             id: *person.id(),
             name: person.name().to_string(),
+            cpf: person.cpf().to_string(),
+        }),
+        Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
+        _ => HttpResponse::InternalServerError().finish(),
+    }
+}
+
+#[put("/{id}")]
+async fn update_person(
+    state: web::Data<AppState>,
+    path: web::Path<Uuid>,
+    body: web::Json<UpdatePersonRequest>,
+) -> HttpResponse {
+    let pool = state.pool().clone();
+    let service = state.person_service().clone();
+    let id = path.into_inner();
+    let name = body.name.clone();
+    let cpf = body.cpf.clone();
+
+    let result = web::block(move || service.update_person(&pool, id, name, cpf)).await;
+
+    match result {
+        Ok(Ok(person)) => HttpResponse::Ok().json(PersonResponse {
+            id: *person.id(),
+            name: person.name().to_string(),
+            cpf: person.cpf().to_string(),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),

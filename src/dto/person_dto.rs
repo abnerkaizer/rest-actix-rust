@@ -11,10 +11,17 @@ pub struct PersonRequest {
 pub struct PersonResponse {
     pub id: Uuid,
     pub name: String,
+    pub cpf: String,
 }
 
 #[derive(Deserialize)]
 pub struct UpdatePersonRequest {
+    pub name: String,
+    pub cpf: String,
+}
+
+#[derive(Deserialize)]
+pub struct UpdateNameRequest {
     pub name: String,
 }
 
