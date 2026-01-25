@@ -2,13 +2,7 @@ use actix_web::web;
 use dotenvy::dotenv;
 use env_logger::Env;
 
-use rest_actix_rust::{
-    AppConfig,
-    AppState,
-    PersonService,
-    create_pool,
-    start_http_server,
-};
+use rest_actix_rust::{AppConfig, AppState, PersonService, create_pool, start_http_server};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -18,9 +12,7 @@ async fn main() -> std::io::Result<()> {
     let config = AppConfig::from_env();
 
     let pool = create_pool(&config.database_url());
-    let app_state = web::Data::new(
-        AppState::new(pool, PersonService::new())
-    );
+    let app_state = web::Data::new(AppState::new(pool, PersonService::new()));
 
     start_http_server(config, app_state).await
 }

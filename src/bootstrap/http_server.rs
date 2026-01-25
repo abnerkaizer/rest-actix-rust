@@ -1,11 +1,7 @@
-use actix_web::{web, App, HttpServer};
 use actix_web::middleware::Logger;
+use actix_web::{App, HttpServer, web};
 
-use crate::{
-    AppState,
-    person_routes,
-    config::AppConfig,
-};
+use crate::{AppState, config::AppConfig, person_routes};
 
 pub async fn start_http_server(
     config: AppConfig,
@@ -18,10 +14,7 @@ pub async fn start_http_server(
         App::new()
             .wrap(Logger::default())
             .app_data(app_state.clone())
-            .service(
-                web::scope("/api")
-                    .service(person_routes()),
-            )
+            .service(web::scope("/api").service(person_routes()))
     })
     .bind((host, port))?
     .run()

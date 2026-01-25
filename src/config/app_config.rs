@@ -16,8 +16,7 @@ impl AppConfig {
             .parse()
             .expect("APP_PORT must be a number");
 
-        let database_url =
-            env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+        let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
         Self {
             host,
