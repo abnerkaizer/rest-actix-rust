@@ -365,7 +365,7 @@
   "variable": [
     {
       "key": "URL",
-      "value": "",
+      "value": "localhost:8080/api",
       "type": "default"
     },
     {
