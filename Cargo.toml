@@ -15,8 +15,9 @@ env_logger = "0.11"
 
 jsonwebtoken = {version = "10.2.0", features = ["rust_crypto"]}
 chrono = {version = "0.4.43", features = ["serde"]}
+bcrypt = "0.18.0"
 
-diesel = { version = "2.3", features = ["postgres", "r2d2", "uuid"] }
+diesel = { version = "2.3", features = ["postgres", "r2d2", "chrono", "uuid"] }
 dotenvy = "0.15"
 
 cpf_util = "0.1.1"

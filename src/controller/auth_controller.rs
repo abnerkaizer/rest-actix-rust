@@ -1,16 +1,54 @@
-use crate::auth::jwt::generate_token;
-use actix_web::{HttpResponse, post};
-use actix_web::{Scope, web};
-
+use crate::{
+    dto::auth_dto::{LoginRequest, RegisterRequest},
+    service::auth_service::AuthService,
+    util::app_state::AppState,
+};
+use actix_web::{HttpResponse, Scope, post, web};
 pub fn routes() -> Scope {
-    web::scope("/auth").service(login)
+    web::scope("/auth").service(login).service(register)
 }
 
 #[post("/login")]
-pub async fn login() -> HttpResponse {
-    let token = generate_token("user-id-123").unwrap();
+pub async fn login(state: web::Data<AppState>, body: web::Json<LoginRequest>) -> HttpResponse {
+    let pool = state.pool().clone();
+    let email = body.email.clone();
+    let password = body.password.clone();
 
-    HttpResponse::Ok().json(serde_json::json!({
-        "token": token
-    }))
+    let result = web::block(move || {
+        let mut conn = pool
+            .get()
+            .map_err(|_| "Erro ao obter conexão com o banco")?;
+        AuthService::login(&mut conn, email, password)
+    })
+    .await;
+
+    match result {
+        Ok(Ok(token)) => HttpResponse::Ok().json(serde_json::json!({ "token": token })),
+        Ok(Err(msg)) => HttpResponse::Unauthorized().json(serde_json::json!({ "error": msg })),
+        Err(_) => HttpResponse::InternalServerError().finish(),
+    }
+}
+
+#[post("/register")]
+pub async fn register(
+    state: web::Data<AppState>,
+    body: web::Json<RegisterRequest>,
+) -> HttpResponse {
+    let pool = state.pool().clone();
+    let email = body.email.clone();
+    let password = body.password.clone();
+
+    let result = web::block(move || {
+        let mut conn = pool
+            .get()
+            .map_err(|_| "Erro ao obter conexão com o banco")?;
+        AuthService::register(&mut conn, email, password)
+    })
+    .await;
+
+    match result {
+        Ok(Ok(())) => HttpResponse::Created().finish(),
+        Ok(Err(msg)) => HttpResponse::BadRequest().json(serde_json::json!({ "error": msg })),
+        Err(_) => HttpResponse::InternalServerError().finish(),
+    }
 }
