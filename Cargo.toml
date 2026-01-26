@@ -13,11 +13,15 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 env_logger = "0.11"
 
+jsonwebtoken = {version = "10.2.0", features = ["rust_crypto"]}
+chrono = {version = "0.4.43", features = ["serde"]}
+
 diesel = { version = "2.3", features = ["postgres", "r2d2", "uuid"] }
 dotenvy = "0.15"
 
 cpf_util = "0.1.1"
 uuid = { version = "1", features = ["serde", "v4"] }
+futures-util = "0.3.31"
 
 [profile.release]
 opt-level = 3

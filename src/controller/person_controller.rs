@@ -16,7 +16,7 @@ pub fn routes() -> Scope {
         .service(find_all_people)
         .service(get_person_by_id)
         .service(update_person)
-        .service(delete)
+        .service(delete_person)
         .service(patch_person_name)
         .service(patch_person_cpf)
 }
@@ -96,7 +96,7 @@ async fn get_person_by_id(state: web::Data<AppState>, path: web::Path<Uuid>) -> 
 }
 
 #[delete("/{id}")]
-async fn delete(state: web::Data<AppState>, path: web::Path<Uuid>) -> HttpResponse {
+async fn delete_person(state: web::Data<AppState>, path: web::Path<Uuid>) -> HttpResponse {
     let pool = state.pool().clone();
     let service = state.person_service().clone();
     let id = path.into_inner();

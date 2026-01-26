@@ -1,7 +1,10 @@
 use actix_web::middleware::Logger;
 use actix_web::{App, HttpServer, web};
 
-use crate::{AppState, config::AppConfig, person_routes};
+use crate::{
+    AppState, auth::middleware::AuthMiddleware, config::AppConfig, controller::auth_controller,
+    person_routes,
+};
 
 pub async fn start_http_server(
     config: AppConfig,
@@ -14,7 +17,11 @@ pub async fn start_http_server(
         App::new()
             .wrap(Logger::default())
             .app_data(app_state.clone())
-            .service(web::scope("/api").service(person_routes()))
+            .service(
+                web::scope("/api")
+                    .service(auth_controller::routes())
+                    .service(person_routes().wrap(AuthMiddleware)),
+            )
     })
     .bind((host, port))?
     .run()

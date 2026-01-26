@@ -1,6 +1,7 @@
 pub mod bootstrap;
 pub mod config;
 
+pub mod auth;
 pub mod controller;
 pub mod dto;
 pub mod error;
