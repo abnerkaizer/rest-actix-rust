@@ -101,7 +101,7 @@ async fn delete_person(state: web::Data<AppState>, path: web::Path<Uuid>) -> Htt
     let service = state.person_service().clone();
     let id = path.into_inner();
 
-    let result = web::block(move || service.delete(&pool, id)).await;
+    let result = web::block(move || service.delete_person(&pool, id)).await;
 
     match result {
         Ok(Ok(_person)) => HttpResponse::NoContent().finish(),

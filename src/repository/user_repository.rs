@@ -1,7 +1,8 @@
 use diesel::prelude::*;
+use uuid::Uuid;
 
 use crate::{
-    model::user::{NewUser, User},
+    model::user::{NewUser, UpdateEmail, UpdatePassword, UpdateUser, User},
     schema::users::dsl::*,
 };
 
@@ -17,5 +18,50 @@ impl UserRepository {
 
     pub fn insert(conn: &mut PgConnection, new_user: NewUser) -> QueryResult<usize> {
         diesel::insert_into(users).values(new_user).execute(conn)
+    }
+
+    pub fn delete_user(conn: &mut PgConnection, user_id: Uuid) -> QueryResult<User> {
+        diesel::delete(users.find(user_id)).get_result(conn)
+    }
+
+    pub fn find_all(conn: &mut PgConnection) -> Result<Vec<User>, diesel::result::Error> {
+        users.load::<User>(conn)
+    }
+
+    pub fn update_user(
+        conn: &mut PgConnection,
+        user_id: Uuid,
+        new_email: String,
+        new_password: String,
+    ) -> QueryResult<User> {
+        let changes = UpdateUser::new(new_email, new_password);
+
+        diesel::update(users.find(user_id))
+            .set(&changes)
+            .get_result::<User>(conn)
+    }
+
+    pub fn update_email(
+        conn: &mut PgConnection,
+        user_id: Uuid,
+        new_email: String,
+    ) -> QueryResult<User> {
+        let changes = UpdateEmail::new(new_email);
+
+        diesel::update(users.find(user_id))
+            .set(&changes)
+            .get_result::<User>(conn)
+    }
+
+    pub fn update_password(
+        conn: &mut PgConnection,
+        user_id: Uuid,
+        new_password: String,
+    ) -> QueryResult<User> {
+        let changes = UpdatePassword::new(new_password);
+
+        diesel::update(users.find(user_id))
+            .set(&changes)
+            .get_result::<User>(conn)
     }
 }

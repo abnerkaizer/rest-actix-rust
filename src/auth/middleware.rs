@@ -2,10 +2,10 @@ use actix_web::{
     Error, HttpResponse,
     body::BoxBody,
     dev::{Service, ServiceRequest, ServiceResponse, Transform, forward_ready},
+    web,
 };
 use futures_util::future::{LocalBoxFuture, Ready, ok};
-
-use crate::auth::jwt::validate_token;
+use crate::{auth::jwt::validate_token, AppState};
 
 pub struct AuthMiddleware;
 
@@ -39,15 +39,23 @@ where
     forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
+        let secret = req
+            .app_data::<web::Data<AppState>>()
+            .map(|state| state.secret());
+
         let auth_header = req
             .headers()
             .get("Authorization")
             .and_then(|h| h.to_str().ok());
 
-        let is_valid = auth_header
-            .and_then(|h| h.strip_prefix("Bearer "))
-            .and_then(|token| validate_token(token).ok())
-            .is_some();
+        let is_valid = if let Some(secret) = secret {
+            auth_header
+                .and_then(|h| h.strip_prefix("Bearer "))
+                .and_then(|token| validate_token(token, &secret).ok())
+                .is_some()
+        } else {
+            false
+        };
 
         if !is_valid {
             let res = HttpResponse::Unauthorized().finish();

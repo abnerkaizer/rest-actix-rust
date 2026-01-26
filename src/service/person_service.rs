@@ -31,9 +31,9 @@ impl PersonService {
         PersonRepository::find_by_id(&mut conn, id)
     }
 
-    pub fn delete(&self, pool: &DbPool, id: Uuid) -> Result<Person, diesel::result::Error> {
+    pub fn delete_person(&self, pool: &DbPool, id: Uuid) -> Result<Person, diesel::result::Error> {
         let mut conn = pool.get().expect("Failed to get DB connection");
-        PersonRepository::delete(&mut conn, id)
+        PersonRepository::delete_person(&mut conn, id)
     }
 
     pub fn update_person(

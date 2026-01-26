@@ -32,7 +32,7 @@ impl PersonRepository {
         persons.find(person_id).first::<Person>(conn)
     }
 
-    pub fn delete(conn: &mut PgConnection, person_id: Uuid) -> QueryResult<Person> {
+    pub fn delete_person(conn: &mut PgConnection, person_id: Uuid) -> QueryResult<Person> {
         diesel::delete(persons.find(person_id)).get_result(conn)
     }
 

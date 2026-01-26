@@ -13,7 +13,7 @@ pub mod util;
 
 pub use bootstrap::start_http_server;
 pub use config::AppConfig;
-pub use controller::routes as person_routes;
 pub use service::db::create_pool;
 pub use service::person_service::PersonService;
+pub use service::user_service::UserService;
 pub use util::app_state::AppState;

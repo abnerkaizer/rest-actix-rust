@@ -3,7 +3,8 @@ use actix_web::{App, HttpServer, web};
 
 use crate::{
     AppState, auth::middleware::AuthMiddleware, config::AppConfig, controller::auth_controller,
-    person_routes,
+    controller::person_controller::routes as person_routes,
+    controller::user_controller::routes as user_routes,
 };
 
 pub async fn start_http_server(
@@ -20,7 +21,8 @@ pub async fn start_http_server(
             .service(
                 web::scope("/api")
                     .service(auth_controller::routes())
-                    .service(person_routes().wrap(AuthMiddleware)),
+                    .service(person_routes().wrap(AuthMiddleware))
+                    .service(user_routes().wrap(AuthMiddleware)),
             )
     })
     .bind((host, port))?
