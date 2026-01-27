@@ -1,365 +1,407 @@
 {
   "info": {
-    "_postman_id": "a1ad006d-5629-4522-8799-8ece817e878e",
+    "_postman_id": "7a725b97-ce48-45ac-a0fd-21ab184a6039",
     "name": "actix",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "7001117"
   },
   "item": [
     {
-      "name": "register",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"email\":\"abner@mail.com\",\n    \"password\":\"admin123\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{URL}}/auth/register",
-          "host": [
-            "{{URL}}"
-          ],
-          "path": [
-            "auth",
-            "register"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "login",
-      "event": [
+      "name": "Person",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "// Debug: Log the raw response body",
-              "console.log(\"=== DEBUG: Post-Response Script Started ===\");",
-              "console.log(\"Response status:\", pm.response.code);",
-              "console.log(\"Raw response body:\", pm.response.text());",
-              "",
-              "// Check if response is valid before parsing",
-              "if (pm.response.code !== 200) {",
-              "    console.error(\"ERROR: Response status is not 200. Status:\", pm.response.code);",
-              "}",
-              "",
-              "// Parse the JSON response with error handling",
-              "let jsonResponse;",
-              "try {",
-              "    jsonResponse = pm.response.json();",
-              "    console.log(\"Parsed JSON response:\", JSON.stringify(jsonResponse, null, 2));",
-              "} catch (parseError) {",
-              "    console.error(\"ERROR: Failed to parse JSON response:\", parseError.message);",
-              "}",
-              "",
-              "// Check if token exists in the response",
-              "if (jsonResponse) {",
-              "    console.log(\"Token exists in response:\", jsonResponse.hasOwnProperty('token'));",
-              "    console.log(\"Token value:\", jsonResponse.token);",
-              "    console.log(\"Token type:\", typeof jsonResponse.token);",
-              "    ",
-              "    if (jsonResponse.token) {",
-              "        // Set the token as a collection variable",
-              "        pm.collectionVariables.set(\"token\", jsonResponse.token);",
-              "        console.log(\"SUCCESS: Token set in collection variable\");",
-              "        ",
-              "        // Verify the variable was set",
-              "        const verifyToken = pm.collectionVariables.get(\"token\");",
-              "        console.log(\"Verification - Token retrieved from collection variables:\", verifyToken ? \"Yes (length: \" + verifyToken.length + \")\" : \"No\");",
-              "    } else {",
-              "        console.error(\"ERROR: Token is null, undefined, or empty in the response\");",
-              "        console.log(\"Available keys in response:\", Object.keys(jsonResponse));",
-              "    }",
-              "} else {",
-              "    console.error(\"ERROR: jsonResponse is null or undefined\");",
-              "}",
-              "",
-              "// Debug: Check current collection variables info",
-              "console.log(\"=== Collection Variables Debug Info ===\");",
-              "console.log(\"All collection variables:\", JSON.stringify(pm.collectionVariables.toObject(), null, 2));",
-              "console.log(\"=== DEBUG: Post-Response Script Completed ===\");"
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"email\":\"abner@mail.com\",\n    \"password\":\"admin123\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
+          "name": "all people",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/person",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "person"
+              ]
             }
-          }
+          },
+          "response": []
         },
-        "url": {
-          "raw": "{{URL}}/auth/login",
-          "host": [
-            "{{URL}}"
-          ],
-          "path": [
-            "auth",
-            "login"
-          ]
+        {
+          "name": "one person",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/person/85c8900c-2c66-4b9e-9e0c-cfa3648374f2",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "person",
+                "85c8900c-2c66-4b9e-9e0c-cfa3648374f2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create person",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\":\"Abner\",\n    \"cpf\":\"61926795091\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/person",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "person"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "atualizar nome",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Abner atualizado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/person/name/0e3e2b48-d301-4117-a2ac-a5f944a9fef8",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "person",
+                "name",
+                "0e3e2b48-d301-4117-a2ac-a5f944a9fef8"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "atualizar CPF",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cpf\": \"19088161046\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/person/cpf/0e3e2b48-d301-4117-a2ac-a5f944a9fef8",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "person",
+                "cpf",
+                "0e3e2b48-d301-4117-a2ac-a5f944a9fef8"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "atualizar person",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"John Doe\",\n    \"cpf\": \"92331099090\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/person/85c8900c-2c66-4b9e-9e0c-cfa3648374f2",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "person",
+                "85c8900c-2c66-4b9e-9e0c-cfa3648374f2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete person",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"John Doe\",\n    \"cpf\": \"92331099090\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/person/85c8900c-2c66-4b9e-9e0c-cfa3648374f2",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "person",
+                "85c8900c-2c66-4b9e-9e0c-cfa3648374f2"
+              ]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "all people",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
+      "name": "Auth",
+      "item": [
+        {
+          "name": "User",
+          "item": [
             {
-              "key": "token",
-              "value": "{{token}}",
-              "type": "string"
+              "name": "all users",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{URL}}/user",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "user"
+                  ]
+                }
+              },
+              "response": []
             }
           ]
         },
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{URL}}/person",
-          "host": [
-            "{{URL}}"
-          ],
-          "path": [
-            "person"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "one person",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
+        {
+          "name": "register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\":\"abner@mail.com\",\n    \"password\":\"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/auth/register",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "login",
+          "event": [
             {
-              "key": "token",
-              "value": "{{token}}",
-              "type": "string"
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Debug: Log the raw response body",
+                  "console.log(\"=== DEBUG: Post-Response Script Started ===\");",
+                  "console.log(\"Response status:\", pm.response.code);",
+                  "console.log(\"Raw response body:\", pm.response.text());",
+                  "",
+                  "// Check if response is valid before parsing",
+                  "if (pm.response.code !== 200) {",
+                  "    console.error(\"ERROR: Response status is not 200. Status:\", pm.response.code);",
+                  "}",
+                  "",
+                  "// Parse the JSON response with error handling",
+                  "let jsonResponse;",
+                  "try {",
+                  "    jsonResponse = pm.response.json();",
+                  "    console.log(\"Parsed JSON response:\", JSON.stringify(jsonResponse, null, 2));",
+                  "} catch (parseError) {",
+                  "    console.error(\"ERROR: Failed to parse JSON response:\", parseError.message);",
+                  "}",
+                  "",
+                  "// Check if token exists in the response",
+                  "if (jsonResponse) {",
+                  "    console.log(\"Token exists in response:\", jsonResponse.hasOwnProperty('token'));",
+                  "    console.log(\"Token value:\", jsonResponse.token);",
+                  "    console.log(\"Token type:\", typeof jsonResponse.token);",
+                  "    ",
+                  "    if (jsonResponse.token) {",
+                  "        // Set the token as a collection variable",
+                  "        pm.collectionVariables.set(\"token\", jsonResponse.token);",
+                  "        console.log(\"SUCCESS: Token set in collection variable\");",
+                  "        ",
+                  "        // Verify the variable was set",
+                  "        const verifyToken = pm.collectionVariables.get(\"token\");",
+                  "        console.log(\"Verification - Token retrieved from collection variables:\", verifyToken ? \"Yes (length: \" + verifyToken.length + \")\" : \"No\");",
+                  "    } else {",
+                  "        console.error(\"ERROR: Token is null, undefined, or empty in the response\");",
+                  "        console.log(\"Available keys in response:\", Object.keys(jsonResponse));",
+                  "    }",
+                  "} else {",
+                  "    console.error(\"ERROR: jsonResponse is null or undefined\");",
+                  "}",
+                  "",
+                  "// Debug: Check current collection variables info",
+                  "console.log(\"=== Collection Variables Debug Info ===\");",
+                  "console.log(\"All collection variables:\", JSON.stringify(pm.collectionVariables.toObject(), null, 2));",
+                  "console.log(\"=== DEBUG: Post-Response Script Completed ===\");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
             }
-          ]
-        },
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{URL}}/person/85c8900c-2c66-4b9e-9e0c-cfa3648374f2",
-          "host": [
-            "{{URL}}"
           ],
-          "path": [
-            "person",
-            "85c8900c-2c66-4b9e-9e0c-cfa3648374f2"
-          ]
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\":\"abner@mail.com\",\n    \"password\":\"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/auth/login",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
-    },
-    {
-      "name": "create person",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{token}}",
-              "type": "string"
-            }
-          ]
-        },
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"name\":\"Abner\",\n    \"cpf\":\"61926795091\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{URL}}/person",
-          "host": [
-            "{{URL}}"
-          ],
-          "path": [
-            "person"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "atualizar nome",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{token}}",
-              "type": "string"
-            }
-          ]
-        },
-        "method": "PATCH",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"name\": \"Abner atualizado\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{URL}}/person/name/0e3e2b48-d301-4117-a2ac-a5f944a9fef8",
-          "host": [
-            "{{URL}}"
-          ],
-          "path": [
-            "person",
-            "name",
-            "0e3e2b48-d301-4117-a2ac-a5f944a9fef8"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "atualizar CPF",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{token}}",
-              "type": "string"
-            }
-          ]
-        },
-        "method": "PATCH",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"cpf\": \"19088161046\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{URL}}/person/cpf/0e3e2b48-d301-4117-a2ac-a5f944a9fef8",
-          "host": [
-            "{{URL}}"
-          ],
-          "path": [
-            "person",
-            "cpf",
-            "0e3e2b48-d301-4117-a2ac-a5f944a9fef8"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "atualizar person",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{token}}",
-              "type": "string"
-            }
-          ]
-        },
-        "method": "PUT",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"name\": \"John Doe\",\n    \"cpf\": \"92331099090\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{URL}}/person/85c8900c-2c66-4b9e-9e0c-cfa3648374f2",
-          "host": [
-            "{{URL}}"
-          ],
-          "path": [
-            "person",
-            "85c8900c-2c66-4b9e-9e0c-cfa3648374f2"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "atualizar person Copy",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{token}}",
-              "type": "string"
-            }
-          ]
-        },
-        "method": "DELETE",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"name\": \"John Doe\",\n    \"cpf\": \"92331099090\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{URL}}/person/85c8900c-2c66-4b9e-9e0c-cfa3648374f2",
-          "host": [
-            "{{URL}}"
-          ],
-          "path": [
-            "person",
-            "85c8900c-2c66-4b9e-9e0c-cfa3648374f2"
-          ]
-        }
-      },
-      "response": []
+      ]
     }
   ],
   "variable": [
