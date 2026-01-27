@@ -9,6 +9,10 @@ use crate::{
 pub struct UserRepository;
 
 impl UserRepository {
+    pub fn find_by_id(conn: &mut PgConnection, user_id: Uuid) -> QueryResult<User> {
+        users.find(user_id).first::<User>(conn)
+    }
+
     pub fn find_by_email(conn: &mut PgConnection, user_email: &str) -> QueryResult<User> {
         users
             .filter(email.eq(user_email))
@@ -32,9 +36,9 @@ impl UserRepository {
         conn: &mut PgConnection,
         user_id: Uuid,
         new_email: String,
-        new_password: String,
+        new_password_hash: String,
     ) -> QueryResult<User> {
-        let changes = UpdateUser::new(new_email, new_password);
+        let changes = UpdateUser::new(new_email, new_password_hash);
 
         diesel::update(users.find(user_id))
             .set(&changes)
@@ -56,9 +60,9 @@ impl UserRepository {
     pub fn update_password(
         conn: &mut PgConnection,
         user_id: Uuid,
-        new_password: String,
+        new_password_hash: String,
     ) -> QueryResult<User> {
-        let changes = UpdatePassword::new(new_password);
+        let changes = UpdatePassword::new(new_password_hash);
 
         diesel::update(users.find(user_id))
             .set(&changes)

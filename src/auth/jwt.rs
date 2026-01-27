@@ -13,12 +13,12 @@ pub fn generate_token(user_id: &str, secret: &str) -> Result<String, jsonwebtoke
         .checked_add_signed(Duration::hours(24))
         .unwrap()
         .timestamp() as usize;
-    
+
     let claims = Claims {
         sub: user_id.to_string(),
         exp: expiration,
     };
-    
+
     encode(
         &Header::default(),
         &claims,

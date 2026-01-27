@@ -1,3 +1,4 @@
+use crate::{AppState, auth::jwt::validate_token};
 use actix_web::{
     Error, HttpResponse,
     body::BoxBody,
@@ -5,7 +6,6 @@ use actix_web::{
     web,
 };
 use futures_util::future::{LocalBoxFuture, Ready, ok};
-use crate::{auth::jwt::validate_token, AppState};
 
 pub struct AuthMiddleware;
 
