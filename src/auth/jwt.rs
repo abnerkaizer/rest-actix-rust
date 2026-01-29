@@ -1,23 +1,20 @@
-use chrono::{Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
-use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Claims {
-    pub sub: String,
-    pub exp: usize,
-}
+use super::claims::Claims;
 
-pub fn generate_token(user_id: &str, secret: &str) -> Result<String, jsonwebtoken::errors::Error> {
-    let expiration = Utc::now()
-        .checked_add_signed(Duration::hours(24))
-        .unwrap()
+pub fn generate_token(
+    user_id: Uuid,
+    role: String,
+    secret: &str,
+    expiration_hours: i64,
+) -> Result<String, jsonwebtoken::errors::Error> {
+    let expiration = chrono::Utc::now()
+        .checked_add_signed(chrono::Duration::hours(expiration_hours))
+        .expect("valid timestamp")
         .timestamp() as usize;
 
-    let claims = Claims {
-        sub: user_id.to_string(),
-        exp: expiration,
-    };
+    let claims = Claims::new(user_id, role, expiration);
 
     encode(
         &Header::default(),
@@ -27,10 +24,11 @@ pub fn generate_token(user_id: &str, secret: &str) -> Result<String, jsonwebtoke
 }
 
 pub fn validate_token(token: &str, secret: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
-    let data = decode::<Claims>(
+    let token_data = decode::<Claims>(
         token,
         &DecodingKey::from_secret(secret.as_bytes()),
         &Validation::default(),
     )?;
-    Ok(data.claims)
+
+    Ok(token_data.claims)
 }

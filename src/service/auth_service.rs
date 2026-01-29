@@ -24,7 +24,9 @@ impl AuthService {
         if !valid {
             return Err("Credenciais inválidas");
         }
-        generate_token(&user.id().to_string(), secret).map_err(|_| "Erro ao gerar token")
+
+        generate_token(*user.id(), user.role().to_string(), secret, 24)
+            .map_err(|_| "Erro ao gerar token")
     }
 
     pub fn register(

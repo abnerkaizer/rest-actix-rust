@@ -1,6 +1,6 @@
 use crate::{AppState, auth::jwt::validate_token};
 use actix_web::{
-    Error, HttpResponse,
+    Error, HttpMessage, HttpResponse,
     body::BoxBody,
     dev::{Service, ServiceRequest, ServiceResponse, Transform, forward_ready},
     web,
@@ -48,19 +48,22 @@ where
             .get("Authorization")
             .and_then(|h| h.to_str().ok());
 
-        let is_valid = if let Some(secret) = secret {
+        let claims = if let Some(secret) = secret {
             auth_header
                 .and_then(|h| h.strip_prefix("Bearer "))
                 .and_then(|token| validate_token(token, &secret).ok())
-                .is_some()
         } else {
-            false
+            None
         };
 
-        if !is_valid {
-            let res = HttpResponse::Unauthorized().finish();
+        if claims.is_none() {
+            let res = HttpResponse::Unauthorized().json(serde_json::json!({
+                "error": "Authentication required"
+            }));
             return Box::pin(async move { Ok(req.into_response(res)) });
         }
+
+        req.extensions_mut().insert(claims.unwrap());
 
         let fut = self.service.call(req);
         Box::pin(async move { fut.await })
