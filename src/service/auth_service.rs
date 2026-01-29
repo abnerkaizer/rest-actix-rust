@@ -30,6 +30,7 @@ impl AuthService {
     pub fn register(
         conn: &mut PgConnection,
         email: String,
+        role: String,
         password: String,
     ) -> Result<(), &'static str> {
         if password.len() < 6 {
@@ -46,6 +47,7 @@ impl AuthService {
         let new_user = NewUser {
             id: Uuid::new_v4(),
             email,
+            role,
             password_hash,
         };
 

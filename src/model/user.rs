@@ -12,6 +12,7 @@ pub struct User {
     email: String,
     password_hash: String,
     created_at: NaiveDateTime,
+    role: String,
 }
 
 #[derive(Insertable)]
@@ -20,12 +21,14 @@ pub struct NewUser {
     pub id: Uuid,
     pub email: String,
     pub password_hash: String,
+    pub role: String,
 }
 
 #[derive(AsChangeset)]
 #[diesel(table_name = users)]
 pub struct UpdateUser {
     email: String,
+    role: String,
     password_hash: String,
 }
 
@@ -41,6 +44,12 @@ pub struct UpdateEmail {
     email: String,
 }
 
+#[derive(AsChangeset)]
+#[diesel(table_name = users)]
+pub struct UpdateRole {
+    role: String,
+}
+
 impl UpdatePassword {
     pub fn new(password_hash: String) -> Self {
         Self { password_hash }
@@ -53,10 +62,17 @@ impl UpdateEmail {
     }
 }
 
+impl UpdateRole {
+    pub fn new(role: String) -> Self {
+        Self { role }
+    }
+}
+
 impl UpdateUser {
-    pub fn new(email: String, password_hash: String) -> Self {
+    pub fn new(email: String, role: String, password_hash: String) -> Self {
         Self {
             email,
+            role,
             password_hash,
         }
     }
@@ -70,7 +86,9 @@ impl User {
     pub fn email(&self) -> &str {
         &self.email
     }
-
+    pub fn role(&self) -> &str {
+        &self.role
+    }
     pub fn password_hash(&self) -> &str {
         &self.password_hash
     }

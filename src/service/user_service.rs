@@ -45,13 +45,14 @@ impl UserService {
         pool: &DbPool,
         user_id: Uuid,
         new_email: String,
+        new_role: String,
         new_password: String,
     ) -> QueryResult<User> {
         let mut conn = pool.get().expect("Failed to get DB connection");
 
         let new_password_hash = hash(new_password, DEFAULT_COST)
             .map_err(|_e| diesel::result::Error::RollbackTransaction)?;
-        UserRepository::update_user(&mut conn, user_id, new_email, new_password_hash)
+        UserRepository::update_user(&mut conn, user_id, new_email, new_role, new_password_hash)
     }
 
     pub fn update_email(
@@ -62,6 +63,16 @@ impl UserService {
     ) -> Result<User, diesel::result::Error> {
         let mut conn = pool.get().expect("Failed to get DB connection");
         UserRepository::update_email(&mut conn, id, email)
+    }
+
+    pub fn update_role(
+        &self,
+        pool: &DbPool,
+        id: Uuid,
+        role: String,
+    ) -> Result<User, diesel::result::Error> {
+        let mut conn = pool.get().expect("Failed to get DB connection");
+        UserRepository::update_role(&mut conn, id, role)
     }
 
     pub fn update_password(

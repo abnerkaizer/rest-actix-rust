@@ -2,7 +2,10 @@ use actix_web::{HttpResponse, Scope, delete, get, patch, put, web};
 use uuid::Uuid;
 
 use crate::{
-    dto::user_dto::{UpdateEmailRequest, UpdatePasswordRequest, UpdateUserRequest, UserResponse},
+    dto::user_dto::{
+        UpdateEmailRequest, UpdatePasswordRequest, UpdateRoleRequest, UpdateUserRequest,
+        UserResponse,
+    },
     error::user_service_error::UserServiceError,
     util::app_state::AppState,
 };
@@ -15,6 +18,7 @@ pub fn routes() -> Scope {
         .service(update_user)
         .service(patch_user_email)
         .service(patch_user_password)
+        .service(patch_user_role)
 }
 
 #[get("")]
@@ -31,6 +35,7 @@ async fn find_all_users(state: web::Data<AppState>) -> HttpResponse {
                 .map(|user| UserResponse {
                     id: *user.id(),
                     email: user.email().to_string(),
+                    role: user.role().to_string(),
                 })
                 .collect();
 
@@ -53,6 +58,7 @@ async fn get_user_by_id(state: web::Data<AppState>, path: web::Path<Uuid>) -> Ht
         Ok(Ok(user)) => HttpResponse::Ok().json(UserResponse {
             id,
             email: user.email().to_string(),
+            role: user.role().to_string(),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
@@ -84,14 +90,16 @@ async fn update_user(
     let service = state.user_service().clone();
     let id = path.into_inner();
     let email = body.email.clone();
+    let role = body.role.clone();
     let password = body.password.clone();
 
-    let result = web::block(move || service.update_user(&pool, id, email, password)).await;
+    let result = web::block(move || service.update_user(&pool, id, email, role, password)).await;
 
     match result {
         Ok(Ok(user)) => HttpResponse::Ok().json(UserResponse {
             id: *user.id(),
             email: user.email().to_string(),
+            role: user.role().to_string(),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
@@ -115,6 +123,31 @@ async fn patch_user_email(
         Ok(Ok(user)) => HttpResponse::Ok().json(UserResponse {
             id: *user.id(),
             email: user.email().to_string(),
+            role: user.role().to_string(),
+        }),
+        Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
+        _ => HttpResponse::InternalServerError().finish(),
+    }
+}
+
+#[patch("/role/{id}")]
+async fn patch_user_role(
+    state: web::Data<AppState>,
+    path: web::Path<Uuid>,
+    body: web::Json<UpdateRoleRequest>,
+) -> HttpResponse {
+    let pool = state.pool().clone();
+    let service = state.user_service().clone();
+    let id = path.into_inner();
+    let role = body.role.clone();
+
+    let result = web::block(move || service.update_role(&pool, id, role)).await;
+
+    match result {
+        Ok(Ok(user)) => HttpResponse::Ok().json(UserResponse {
+            id: *user.id(),
+            email: user.email().to_string(),
+            role: user.role().to_string(),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
@@ -138,6 +171,7 @@ async fn patch_user_password(
         Ok(Ok(user)) => HttpResponse::Ok().json(UserResponse {
             id: *user.id(),
             email: user.email().to_string(),
+            role: user.role().to_string(),
         }),
         Ok(Err(UserServiceError::NotFound)) => HttpResponse::NotFound().finish(),
         Ok(Err(UserServiceError::HashError)) => HttpResponse::InternalServerError().finish(),

@@ -40,6 +40,7 @@ pub async fn register(
 ) -> HttpResponse {
     let pool = state.pool().clone();
     let email = body.email.clone();
+    let role = body.role.clone();
     let password = body.password.clone();
 
     let result = web::block(move || {
@@ -47,7 +48,7 @@ pub async fn register(
             .get()
             .map_err(|_| "Erro ao obter conexão com o banco")?;
 
-        AuthService::register(&mut conn, email, password)
+        AuthService::register(&mut conn, email, role, password)
     })
     .await;
 

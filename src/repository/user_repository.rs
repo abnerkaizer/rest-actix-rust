@@ -2,7 +2,7 @@ use diesel::prelude::*;
 use uuid::Uuid;
 
 use crate::{
-    model::user::{NewUser, UpdateEmail, UpdatePassword, UpdateUser, User},
+    model::user::{NewUser, UpdateEmail, UpdatePassword, UpdateRole, UpdateUser, User},
     schema::users::dsl::*,
 };
 
@@ -36,9 +36,10 @@ impl UserRepository {
         conn: &mut PgConnection,
         user_id: Uuid,
         new_email: String,
+        new_role: String,
         new_password_hash: String,
     ) -> QueryResult<User> {
-        let changes = UpdateUser::new(new_email, new_password_hash);
+        let changes = UpdateUser::new(new_email, new_role, new_password_hash);
 
         diesel::update(users.find(user_id))
             .set(&changes)
@@ -51,6 +52,18 @@ impl UserRepository {
         new_email: String,
     ) -> QueryResult<User> {
         let changes = UpdateEmail::new(new_email);
+
+        diesel::update(users.find(user_id))
+            .set(&changes)
+            .get_result::<User>(conn)
+    }
+
+    pub fn update_role(
+        conn: &mut PgConnection,
+        user_id: Uuid,
+        new_role: String,
+    ) -> QueryResult<User> {
+        let changes = UpdateRole::new(new_role);
 
         diesel::update(users.find(user_id))
             .set(&changes)
