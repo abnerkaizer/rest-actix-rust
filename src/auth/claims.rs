@@ -3,9 +3,9 @@ use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    pub sub: Uuid,    // user_id
-    pub role: String, // user role
-    pub exp: usize,   // expiration time
+    pub sub: Uuid,
+    pub role: String,
+    pub exp: usize,
 }
 
 impl Claims {

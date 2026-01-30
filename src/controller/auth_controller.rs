@@ -17,9 +17,7 @@ pub async fn login(state: web::Data<AppState>, body: web::Json<LoginRequest>) ->
     let password = body.password.clone();
 
     let result = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|_| "Erro ao obter conexão com o banco")?;
+        let mut conn = pool.get().map_err(|_| "Database connection error")?;
         let secret = state.secret();
 
         AuthService::login(&mut conn, email, password, &secret)
@@ -44,9 +42,7 @@ pub async fn register(
     let password = body.password.clone();
 
     let result = web::block(move || {
-        let mut conn = pool
-            .get()
-            .map_err(|_| "Erro ao obter conexão com o banco")?;
+        let mut conn = pool.get().map_err(|_| "Database connection error")?;
 
         AuthService::register(&mut conn, email, role, password)
     })

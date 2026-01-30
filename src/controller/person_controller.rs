@@ -31,7 +31,7 @@ async fn create_person(state: web::Data<AppState>, body: web::Json<PersonRequest
 
     if !cpf_util::is_valid(&cpf) {
         return HttpResponse::BadRequest().json(ErrorResponse {
-            error: "CPF inválido".to_string(),
+            error: "Invalid CPF".to_string(),
         });
     }
 
@@ -147,7 +147,7 @@ async fn patch_person_cpf(
 
     if !cpf_util::is_valid(&cpf) {
         return HttpResponse::BadRequest().json(ErrorResponse {
-            error: "CPF inválido".to_string(),
+            error: "Invalid CPF".to_string(),
         });
     }
 

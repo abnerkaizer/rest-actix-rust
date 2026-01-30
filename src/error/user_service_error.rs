@@ -19,9 +19,9 @@ impl From<DieselError> for UserServiceError {
 impl std::fmt::Display for UserServiceError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            UserServiceError::HashError => write!(f, "Erro ao gerar hash da senha"),
-            UserServiceError::NotFound => write!(f, "Usuário não encontrado"),
-            UserServiceError::DatabaseError(err) => write!(f, "Erro no banco de dados: {}", err),
+            UserServiceError::HashError => write!(f, "Error generating password hash"),
+            UserServiceError::NotFound => write!(f, "User not found"),
+            UserServiceError::DatabaseError(err) => write!(f, "Database error: {}", err),
         }
     }
 }

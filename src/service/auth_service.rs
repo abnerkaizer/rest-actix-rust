@@ -15,18 +15,17 @@ impl AuthService {
         password: String,
         secret: &str,
     ) -> Result<String, &'static str> {
-        let user =
-            UserRepository::find_by_email(conn, &email).map_err(|_| "Usuário não encontrado")?;
+        let user = UserRepository::find_by_email(conn, &email).map_err(|_| "User not found")?;
 
         let valid =
-            verify(password, &user.password_hash()).map_err(|_| "Erro ao verificar senha")?;
+            verify(password, &user.password_hash()).map_err(|_| "Password verification error")?;
 
         if !valid {
-            return Err("Credenciais inválidas");
+            return Err("Invalid credentials");
         }
 
         generate_token(*user.id(), user.role().to_string(), secret, 24)
-            .map_err(|_| "Erro ao gerar token")
+            .map_err(|_| "Token genation error")
     }
 
     pub fn register(
@@ -36,15 +35,15 @@ impl AuthService {
         password: String,
     ) -> Result<(), &'static str> {
         if password.len() < 6 {
-            return Err("Senha muito curta");
+            return Err("Password is too short");
         }
 
         if UserRepository::find_by_email(conn, &email).is_ok() {
-            return Err("Usuário já existe");
+            return Err("User already exists");
         }
 
         let password_hash =
-            hash(password, DEFAULT_COST).map_err(|_| "Erro ao gerar hash da senha")?;
+            hash(password, DEFAULT_COST).map_err(|_| "Error generating password hash")?;
 
         let new_user = NewUser {
             id: Uuid::new_v4(),
@@ -53,7 +52,7 @@ impl AuthService {
             password_hash,
         };
 
-        UserRepository::insert(conn, new_user).map_err(|_| "Erro ao criar usuário")?;
+        UserRepository::insert(conn, new_user).map_err(|_| "User creation error")?;
 
         Ok(())
     }

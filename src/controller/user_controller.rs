@@ -26,7 +26,6 @@ pub fn routes() -> Scope {
 /// Lista todos os usuários - apenas admin
 #[get("")]
 async fn find_all_users(state: web::Data<AppState>, claims: Claims) -> HttpResponse {
-    // Apenas admin pode listar todos os usuários
     if let Err(response) = require_admin(&claims) {
         return response;
     }
@@ -63,7 +62,6 @@ async fn get_user_by_id(
 ) -> HttpResponse {
     let id = path.into_inner();
 
-    // Usuário pode ver seus próprios dados ou admin pode ver qualquer um
     if let Err(response) = require_self_or_admin(&claims, &id) {
         return response;
     }
@@ -119,7 +117,6 @@ async fn update_user(
 ) -> HttpResponse {
     let id = path.into_inner();
 
-    // Verifica se é o próprio usuário ou admin
     if let Err(response) = require_self_or_admin(&claims, &id) {
         return response;
     }
@@ -129,11 +126,9 @@ async fn update_user(
     let email = body.email.clone();
     let password = body.password.clone();
 
-    // Se não for admin, não permite alterar o role (mantém o atual)
     let role = if claims.is_admin() {
         body.role.clone()
     } else {
-        // Se não é admin e tentou mudar o role, retorna erro
         if let Ok(Ok(current_user)) = web::block({
             let pool = pool.clone();
             let service = service.clone();
@@ -175,7 +170,6 @@ async fn patch_user_email(
 ) -> HttpResponse {
     let id = path.into_inner();
 
-    // Verifica se é o próprio usuário ou admin
     if let Err(response) = require_self_or_admin(&claims, &id) {
         return response;
     }
@@ -205,7 +199,6 @@ async fn patch_user_role(
     body: web::Json<UpdateRoleRequest>,
     claims: Claims,
 ) -> HttpResponse {
-    // Apenas admin pode alterar roles
     if let Err(response) = require_admin(&claims) {
         return response;
     }
@@ -238,7 +231,6 @@ async fn patch_user_password(
 ) -> HttpResponse {
     let id = path.into_inner();
 
-    // Verifica se é o próprio usuário ou admin
     if let Err(response) = require_self_or_admin(&claims, &id) {
         return response;
     }
