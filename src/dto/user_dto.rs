@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::model::role::Role;
+
 #[derive(Deserialize)]
 pub struct UserRequest {
     pub email: String,
@@ -11,14 +13,14 @@ pub struct UserRequest {
 pub struct UserResponse {
     pub id: Uuid,
     pub email: String,
-    pub role: String,
+    pub role: Role,
 }
 
 #[derive(Deserialize)]
 pub struct UpdateUserRequest {
     pub email: String,
     pub password: String,
-    pub role: String,
+    pub role: Role,
 }
 
 #[derive(Deserialize)]
@@ -28,7 +30,7 @@ pub struct UpdateEmailRequest {
 
 #[derive(Deserialize)]
 pub struct UpdateRoleRequest {
-    pub role: String,
+    pub role: Role,
 }
 
 #[derive(Deserialize)]

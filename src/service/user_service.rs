@@ -4,7 +4,10 @@ use uuid::Uuid;
 
 use crate::{
     error::user_service_error::UserServiceError,
-    model::user::{NewUser, User},
+    model::{
+        role::Role,
+        user::{NewUser, User},
+    },
     repository::user_repository::UserRepository,
     service::db::DbPool,
 };
@@ -45,7 +48,7 @@ impl UserService {
         pool: &DbPool,
         user_id: Uuid,
         new_email: String,
-        new_role: String,
+        new_role: Role,
         new_password: String,
     ) -> QueryResult<User> {
         let mut conn = pool.get().expect("Failed to get DB connection");
@@ -69,7 +72,7 @@ impl UserService {
         &self,
         pool: &DbPool,
         id: Uuid,
-        role: String,
+        role: Role,
     ) -> Result<User, diesel::result::Error> {
         let mut conn = pool.get().expect("Failed to get DB connection");
         UserRepository::update_role(&mut conn, id, role)

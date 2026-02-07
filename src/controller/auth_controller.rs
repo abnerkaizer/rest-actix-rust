@@ -1,5 +1,6 @@
 use crate::{
     dto::auth_dto::{LoginRequest, RegisterRequest},
+    model::role::Role,
     service::auth_service::AuthService,
     util::app_state::AppState,
 };
@@ -38,7 +39,8 @@ pub async fn register(
 ) -> HttpResponse {
     let pool = state.pool().clone();
     let email = body.email.clone();
-    let role = body.role.clone();
+    let role = Role::User;
+
     let password = body.password.clone();
 
     let result = web::block(move || {
@@ -49,7 +51,7 @@ pub async fn register(
     .await;
 
     match result {
-        Ok(Ok(())) => HttpResponse::Created().finish(),
+        Ok(Ok(id)) => HttpResponse::Created().json(serde_json::json!({ "id": id })),
         Ok(Err(msg)) => HttpResponse::BadRequest().json(serde_json::json!({ "error": msg })),
         Err(_) => HttpResponse::InternalServerError().finish(),
     }

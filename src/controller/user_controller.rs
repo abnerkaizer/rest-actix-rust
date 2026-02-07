@@ -1,3 +1,4 @@
+use crate::model::role::Role;
 use actix_web::{HttpResponse, Scope, delete, get, patch, put, web};
 use uuid::Uuid;
 
@@ -42,7 +43,7 @@ async fn find_all_users(state: web::Data<AppState>, claims: Claims) -> HttpRespo
                 .map(|user| UserResponse {
                     id: *user.id(),
                     email: user.email().to_string(),
-                    role: user.role().to_string(),
+                    role: user.role(),
                 })
                 .collect();
 
@@ -75,7 +76,7 @@ async fn get_user_by_id(
         Ok(Ok(user)) => HttpResponse::Ok().json(UserResponse {
             id,
             email: user.email().to_string(),
-            role: user.role().to_string(),
+            role: user.role(),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
@@ -126,25 +127,37 @@ async fn update_user(
     let email = body.email.clone();
     let password = body.password.clone();
 
-    let role = if claims.is_admin() {
-        body.role.clone()
+    let desired_role: Role = match body.role.as_str().parse() {
+        Ok(r) => r,
+        Err(_) => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "Invalid role (use 'admin' or 'user')"
+            }));
+        }
+    };
+
+    let role: Role = if claims.is_admin() {
+        desired_role
     } else {
-        if let Ok(Ok(current_user)) = web::block({
+        let current = match web::block({
             let pool = pool.clone();
             let service = service.clone();
             move || service.find_by_id(&pool, id)
         })
         .await
         {
-            if current_user.role() != body.role {
-                return HttpResponse::Forbidden().json(serde_json::json!({
-                    "error": "You cannot change your own role"
-                }));
-            }
-            current_user.role().to_string()
-        } else {
-            return HttpResponse::InternalServerError().finish();
+            Ok(Ok(u)) => u,
+            Ok(Err(diesel::result::Error::NotFound)) => return HttpResponse::NotFound().finish(),
+            _ => return HttpResponse::InternalServerError().finish(),
+        };
+
+        if current.role() != desired_role {
+            return HttpResponse::Forbidden().json(serde_json::json!({
+                "error": "You cannot change your own role"
+            }));
         }
+
+        current.role()
     };
 
     let result = web::block(move || service.update_user(&pool, id, email, role, password)).await;
@@ -153,7 +166,7 @@ async fn update_user(
         Ok(Ok(user)) => HttpResponse::Ok().json(UserResponse {
             id: *user.id(),
             email: user.email().to_string(),
-            role: user.role().to_string(),
+            role: user.role(),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
@@ -184,7 +197,7 @@ async fn patch_user_email(
         Ok(Ok(user)) => HttpResponse::Ok().json(UserResponse {
             id: *user.id(),
             email: user.email().to_string(),
-            role: user.role().to_string(),
+            role: user.role(),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
@@ -214,7 +227,7 @@ async fn patch_user_role(
         Ok(Ok(user)) => HttpResponse::Ok().json(UserResponse {
             id: *user.id(),
             email: user.email().to_string(),
-            role: user.role().to_string(),
+            role: user.role(),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
@@ -245,7 +258,7 @@ async fn patch_user_password(
         Ok(Ok(user)) => HttpResponse::Ok().json(UserResponse {
             id: *user.id(),
             email: user.email().to_string(),
-            role: user.role().to_string(),
+            role: user.role(),
         }),
         Ok(Err(UserServiceError::NotFound)) => HttpResponse::NotFound().finish(),
         Ok(Err(UserServiceError::HashError)) => HttpResponse::InternalServerError().finish(),

@@ -1,3 +1,4 @@
+use crate::model::role::Role;
 use crate::{
     auth::jwt::generate_token, model::user::NewUser, repository::user_repository::UserRepository,
 };
@@ -31,9 +32,9 @@ impl AuthService {
     pub fn register(
         conn: &mut PgConnection,
         email: String,
-        role: String,
+        role: Role,
         password: String,
-    ) -> Result<(), &'static str> {
+    ) -> Result<Uuid, &'static str> {
         if password.len() < 6 {
             return Err("Password is too short");
         }
@@ -52,8 +53,10 @@ impl AuthService {
             password_hash,
         };
 
+        let id = new_user.id;
+
         UserRepository::insert(conn, new_user).map_err(|_| "User creation error")?;
 
-        Ok(())
+        Ok(id)
     }
 }

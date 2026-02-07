@@ -2,7 +2,7 @@ use chrono::NaiveDateTime;
 use diesel::{AsChangeset, Insertable, Queryable, Selectable};
 use uuid::Uuid;
 
-use crate::schema::users;
+use crate::{model::role::Role, schema::users};
 
 #[derive(Debug, Queryable, Selectable)]
 #[diesel(table_name = users)]
@@ -12,7 +12,7 @@ pub struct User {
     email: String,
     password_hash: String,
     created_at: NaiveDateTime,
-    role: String,
+    role: Role,
 }
 
 #[derive(Insertable)]
@@ -21,14 +21,14 @@ pub struct NewUser {
     pub id: Uuid,
     pub email: String,
     pub password_hash: String,
-    pub role: String,
+    pub role: Role,
 }
 
 #[derive(AsChangeset)]
 #[diesel(table_name = users)]
 pub struct UpdateUser {
     email: String,
-    role: String,
+    role: Role,
     password_hash: String,
 }
 
@@ -47,7 +47,7 @@ pub struct UpdateEmail {
 #[derive(AsChangeset)]
 #[diesel(table_name = users)]
 pub struct UpdateRole {
-    role: String,
+    role: Role,
 }
 
 impl UpdatePassword {
@@ -63,13 +63,13 @@ impl UpdateEmail {
 }
 
 impl UpdateRole {
-    pub fn new(role: String) -> Self {
+    pub fn new(role: Role) -> Self {
         Self { role }
     }
 }
 
 impl UpdateUser {
-    pub fn new(email: String, role: String, password_hash: String) -> Self {
+    pub fn new(email: String, role: Role, password_hash: String) -> Self {
         Self {
             email,
             role,
@@ -86,8 +86,8 @@ impl User {
     pub fn email(&self) -> &str {
         &self.email
     }
-    pub fn role(&self) -> &str {
-        &self.role
+    pub fn role(&self) -> Role {
+        self.role
     }
     pub fn password_hash(&self) -> &str {
         &self.password_hash

@@ -301,13 +301,13 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{URL}}/user/39afd554-d695-4498-af9a-894b6fd93a5a",
+                  "raw": "{{URL}}/user/ed6b23b6-a2c4-48ba-aa8e-66ff65a2a4c2",
                   "host": [
                     "{{URL}}"
                   ],
                   "path": [
                     "user",
-                    "39afd554-d695-4498-af9a-894b6fd93a5a"
+                    "ed6b23b6-a2c4-48ba-aa8e-66ff65a2a4c2"
                   ]
                 }
               },
@@ -329,13 +329,13 @@
                 "method": "DELETE",
                 "header": [],
                 "url": {
-                  "raw": "{{URL}}/user/39afd554-d695-4498-af9a-894b6fd93a5a",
+                  "raw": "{{URL}}/user/ed6b23b6-a2c4-48ba-aa8e-66ff65a2a4c2",
                   "host": [
                     "{{URL}}"
                   ],
                   "path": [
                     "user",
-                    "39afd554-d695-4498-af9a-894b6fd93a5a"
+                    "ed6b23b6-a2c4-48ba-aa8e-66ff65a2a4c2"
                   ]
                 }
               },
@@ -358,7 +358,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"email\":\"abner@email.com\",\n    \"password\":\"manager234\"\n}",
+                  "raw": "{\n    \"email\":\"abner@email.com\",\n    \"password\":\"admin123\",\n    \"role\": \"admin\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -366,13 +366,13 @@
                   }
                 },
                 "url": {
-                  "raw": "{{URL}}/user/39afd554-d695-4498-af9a-894b6fd93a5a",
+                  "raw": "{{URL}}/user/010dbde7-48aa-4646-b199-3017ee140916",
                   "host": [
                     "{{URL}}"
                   ],
                   "path": [
                     "user",
-                    "39afd554-d695-4498-af9a-894b6fd93a5a"
+                    "010dbde7-48aa-4646-b199-3017ee140916"
                   ]
                 }
               },
@@ -403,14 +403,52 @@
                   }
                 },
                 "url": {
-                  "raw": "{{URL}}/user/email/39afd554-d695-4498-af9a-894b6fd93a5a",
+                  "raw": "{{URL}}/user/email/230226f1-7e07-4bfc-9237-f287520737de",
                   "host": [
                     "{{URL}}"
                   ],
                   "path": [
                     "user",
                     "email",
-                    "39afd554-d695-4498-af9a-894b6fd93a5a"
+                    "230226f1-7e07-4bfc-9237-f287520737de"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "update user role",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"role\":\"admin\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{URL}}/user/role/230226f1-7e07-4bfc-9237-f287520737de",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "user",
+                    "role",
+                    "230226f1-7e07-4bfc-9237-f287520737de"
                   ]
                 }
               },
@@ -484,7 +522,7 @@
           "response": []
         },
         {
-          "name": "login",
+          "name": "login admin",
           "event": [
             {
               "listen": "test",
@@ -550,7 +588,94 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\":\"abner@gmail.com\",\n    \"password\":\"admin123\"\n}",
+              "raw": "{\n    \"email\":\"admin@local\",\n    \"password\":\"change-me\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/auth/login",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "login user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Debug: Log the raw response body",
+                  "console.log(\"=== DEBUG: Post-Response Script Started ===\");",
+                  "console.log(\"Response status:\", pm.response.code);",
+                  "console.log(\"Raw response body:\", pm.response.text());",
+                  "",
+                  "// Check if response is valid before parsing",
+                  "if (pm.response.code !== 200) {",
+                  "    console.error(\"ERROR: Response status is not 200. Status:\", pm.response.code);",
+                  "}",
+                  "",
+                  "// Parse the JSON response with error handling",
+                  "let jsonResponse;",
+                  "try {",
+                  "    jsonResponse = pm.response.json();",
+                  "    console.log(\"Parsed JSON response:\", JSON.stringify(jsonResponse, null, 2));",
+                  "} catch (parseError) {",
+                  "    console.error(\"ERROR: Failed to parse JSON response:\", parseError.message);",
+                  "}",
+                  "",
+                  "// Check if token exists in the response",
+                  "if (jsonResponse) {",
+                  "    console.log(\"Token exists in response:\", jsonResponse.hasOwnProperty('token'));",
+                  "    console.log(\"Token value:\", jsonResponse.token);",
+                  "    console.log(\"Token type:\", typeof jsonResponse.token);",
+                  "    ",
+                  "    if (jsonResponse.token) {",
+                  "        // Set the token as a collection variable",
+                  "        pm.collectionVariables.set(\"token\", jsonResponse.token);",
+                  "        console.log(\"SUCCESS: Token set in collection variable\");",
+                  "        ",
+                  "        // Verify the variable was set",
+                  "        const verifyToken = pm.collectionVariables.get(\"token\");",
+                  "        console.log(\"Verification - Token retrieved from collection variables:\", verifyToken ? \"Yes (length: \" + verifyToken.length + \")\" : \"No\");",
+                  "    } else {",
+                  "        console.error(\"ERROR: Token is null, undefined, or empty in the response\");",
+                  "        console.log(\"Available keys in response:\", Object.keys(jsonResponse));",
+                  "    }",
+                  "} else {",
+                  "    console.error(\"ERROR: jsonResponse is null or undefined\");",
+                  "}",
+                  "",
+                  "// Debug: Check current collection variables info",
+                  "console.log(\"=== Collection Variables Debug Info ===\");",
+                  "console.log(\"All collection variables:\", JSON.stringify(pm.collectionVariables.toObject(), null, 2));",
+                  "console.log(\"=== DEBUG: Post-Response Script Completed ===\");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\":\"abner@email.com\",\n    \"password\":\"admin123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
