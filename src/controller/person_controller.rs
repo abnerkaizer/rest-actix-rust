@@ -4,6 +4,8 @@ use cpf_util;
 use uuid::Uuid;
 
 use crate::{
+    auth::claims::Claims,
+    auth::claims_extractor::require_admin,
     dto::person_dto::{
         PersonRequest, PersonResponse, UpdateCpfRequest, UpdateNameRequest, UpdatePersonRequest,
     },
@@ -78,9 +80,10 @@ async fn find_all_people(state: web::Data<AppState>) -> HttpResponse {
 
 #[get("/{id}")]
 async fn get_person_by_id(state: web::Data<AppState>, path: web::Path<Uuid>) -> HttpResponse {
+    let id = path.into_inner();
+
     let pool = state.pool().clone();
     let service = state.person_service().clone();
-    let id = path.into_inner();
 
     let result = web::block(move || service.find_by_id(&pool, id)).await;
 
@@ -96,7 +99,14 @@ async fn get_person_by_id(state: web::Data<AppState>, path: web::Path<Uuid>) -> 
 }
 
 #[delete("/{id}")]
-async fn delete_person(state: web::Data<AppState>, path: web::Path<Uuid>) -> HttpResponse {
+async fn delete_person(
+    state: web::Data<AppState>,
+    path: web::Path<Uuid>,
+    claims: Claims,
+) -> HttpResponse {
+    if let Err(response) = require_admin(&claims) {
+        return response;
+    }
     let pool = state.pool().clone();
     let service = state.person_service().clone();
     let id = path.into_inner();
@@ -115,7 +125,12 @@ async fn patch_person_name(
     state: web::Data<AppState>,
     path: web::Path<Uuid>,
     body: web::Json<UpdateNameRequest>,
+    claims: Claims,
 ) -> HttpResponse {
+    if let Err(response) = require_admin(&claims) {
+        return response;
+    }
+
     let pool = state.pool().clone();
     let service = state.person_service().clone();
     let id = path.into_inner();
@@ -139,7 +154,11 @@ async fn patch_person_cpf(
     state: web::Data<AppState>,
     path: web::Path<Uuid>,
     body: web::Json<UpdateCpfRequest>,
+    claims: Claims,
 ) -> HttpResponse {
+    if let Err(response) = require_admin(&claims) {
+        return response;
+    }
     let pool = state.pool().clone();
     let service = state.person_service().clone();
     let id = path.into_inner();
@@ -169,7 +188,12 @@ async fn update_person(
     state: web::Data<AppState>,
     path: web::Path<Uuid>,
     body: web::Json<UpdatePersonRequest>,
+    claims: Claims,
 ) -> HttpResponse {
+    if let Err(response) = require_admin(&claims) {
+        return response;
+    }
+
     let pool = state.pool().clone();
     let service = state.person_service().clone();
     let id = path.into_inner();

@@ -4,6 +4,7 @@ use diesel::serialize::{self, IsNull, Output, ToSql};
 use diesel::sql_types::VarChar;
 use diesel::{AsExpression, FromSqlRow};
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 use std::io::Write;
 use std::str::FromStr;
 
@@ -24,8 +25,8 @@ impl Role {
     }
 }
 
-impl std::fmt::Display for Role {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Display for Role {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.as_str())
     }
 }
