@@ -1,3 +1,4 @@
+use diesel::dsl::count_star;
 use diesel::prelude::*;
 use uuid::Uuid;
 
@@ -26,6 +27,27 @@ impl PersonRepository {
 
     pub fn find_all(conn: &mut PgConnection) -> Result<Vec<Person>, diesel::result::Error> {
         persons.load::<Person>(conn)
+    }
+
+    pub fn find_page(
+        conn: &mut PgConnection,
+        page: i64,
+        per_page: i64,
+    ) -> QueryResult<(i64, Vec<Person>)> {
+        let page = page.max(1);
+        let per_page = per_page.max(1);
+
+        let total: i64 = persons.select(count_star()).first(conn)?;
+
+        let offset = (page - 1) * per_page;
+
+        let items = persons
+            .order(id.asc())
+            .limit(per_page)
+            .offset(offset)
+            .load::<Person>(conn)?;
+
+        Ok((total, items))
     }
 
     pub fn find_by_id(conn: &mut PgConnection, person_id: Uuid) -> QueryResult<Person> {

@@ -2,6 +2,7 @@ use crate::{
     model::person::Person, repository::person_repository::PersonRepository, service::db::DbPool,
 };
 
+use diesel::result::QueryResult;
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -24,6 +25,17 @@ impl PersonService {
     pub fn find_all(&self, pool: &DbPool) -> Result<Vec<Person>, diesel::result::Error> {
         let mut conn = pool.get().expect("Failed to get DB connection");
         PersonRepository::find_all(&mut conn)
+    }
+
+    pub fn find_page(
+        &self,
+        pool: &DbPool,
+        page: i64,
+        per_page: i64,
+    ) -> QueryResult<(i64, Vec<Person>)> {
+        let mut conn = pool.get().map_err(|_| diesel::result::Error::NotFound)?; // se você já tem um erro próprio, melhor mapear pra ele
+
+        PersonRepository::find_page(&mut conn, page, per_page)
     }
 
     pub fn find_by_id(&self, pool: &DbPool, id: Uuid) -> Result<Person, diesel::result::Error> {

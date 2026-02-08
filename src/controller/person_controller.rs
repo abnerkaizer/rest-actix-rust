@@ -1,4 +1,7 @@
-use crate::error::error_response::ErrorResponse;
+use crate::{
+    dto::person_dto::{PaginatedResponse, PaginationQuery},
+    error::error_response::ErrorResponse,
+};
 use actix_web::{HttpResponse, Scope, delete, get, patch, post, put, web};
 use cpf_util;
 use uuid::Uuid;
@@ -54,15 +57,22 @@ async fn create_person(state: web::Data<AppState>, body: web::Json<PersonRequest
 }
 
 #[get("")]
-async fn find_all_people(state: web::Data<AppState>) -> HttpResponse {
+async fn find_all_people(
+    state: web::Data<AppState>,
+    query: web::Query<PaginationQuery>,
+) -> HttpResponse {
     let pool = state.pool().clone();
     let service = state.person_service().clone();
 
-    let result = web::block(move || service.find_all(&pool)).await;
+    let page = query.page.max(1);
+    let mut size = query.size.max(1);
+    size = size.min(100);
+
+    let result = web::block(move || service.find_page(&pool, page, size)).await;
 
     match result {
-        Ok(Ok(people)) => {
-            let response: Vec<PersonResponse> = people
+        Ok(Ok((total, people))) => {
+            let items: Vec<PersonResponse> = people
                 .into_iter()
                 .map(|person| PersonResponse {
                     id: *person.id(),
@@ -71,9 +81,13 @@ async fn find_all_people(state: web::Data<AppState>) -> HttpResponse {
                 })
                 .collect();
 
-            HttpResponse::Ok().json(response)
+            HttpResponse::Ok().json(PaginatedResponse {
+                page,
+                size,
+                total,
+                items,
+            })
         }
-        Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
     }
 }
