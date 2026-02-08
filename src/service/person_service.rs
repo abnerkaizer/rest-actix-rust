@@ -33,7 +33,7 @@ impl PersonService {
         page: i64,
         per_page: i64,
     ) -> QueryResult<(i64, Vec<Person>)> {
-        let mut conn = pool.get().map_err(|_| diesel::result::Error::NotFound)?; // se você já tem um erro próprio, melhor mapear pra ele
+        let mut conn = pool.get().map_err(|_| diesel::result::Error::NotFound)?;
 
         PersonRepository::find_page(&mut conn, page, per_page)
     }

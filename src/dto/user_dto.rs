@@ -37,3 +37,26 @@ pub struct UpdateRoleRequest {
 pub struct UpdatePasswordRequest {
     pub password: String,
 }
+
+fn default_page() -> i64 {
+    1
+}
+fn default_size() -> i64 {
+    20
+}
+
+#[derive(Deserialize)]
+pub struct PageQuery {
+    #[serde(default = "default_page")]
+    pub page: i64,
+    #[serde(default = "default_size")]
+    pub size: i64,
+}
+
+#[derive(Serialize)]
+pub struct PaginatedResponse<T> {
+    pub page: i64,
+    pub size: i64,
+    pub total: i64,
+    pub items: Vec<T>,
+}

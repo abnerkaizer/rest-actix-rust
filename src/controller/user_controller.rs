@@ -1,4 +1,7 @@
-use crate::model::role::Role;
+use crate::{
+    dto::user_dto::{PageQuery, PaginatedResponse},
+    model::role::Role,
+};
 use actix_web::{HttpResponse, Scope, delete, get, patch, put, web};
 use uuid::Uuid;
 
@@ -26,7 +29,11 @@ pub fn routes() -> Scope {
 
 /// Lista todos os usuários - apenas admin
 #[get("")]
-async fn find_all_users(state: web::Data<AppState>, claims: Claims) -> HttpResponse {
+async fn find_all_users(
+    state: web::Data<AppState>,
+    claims: Claims,
+    query: web::Query<PageQuery>,
+) -> HttpResponse {
     if let Err(response) = require_admin(&claims) {
         return response;
     }
@@ -34,11 +41,15 @@ async fn find_all_users(state: web::Data<AppState>, claims: Claims) -> HttpRespo
     let pool = state.pool().clone();
     let service = state.user_service().clone();
 
-    let result = web::block(move || service.find_all(&pool)).await;
+    let page = query.page.max(1);
+    let mut size = query.size.max(1);
+    size = size.min(100);
+
+    let result = web::block(move || service.find_page(&pool, page, size)).await;
 
     match result {
-        Ok(Ok(users)) => {
-            let response: Vec<UserResponse> = users
+        Ok(Ok((total, users))) => {
+            let items: Vec<UserResponse> = users
                 .into_iter()
                 .map(|user| UserResponse {
                     id: *user.id(),
@@ -47,9 +58,13 @@ async fn find_all_users(state: web::Data<AppState>, claims: Claims) -> HttpRespo
                 })
                 .collect();
 
-            HttpResponse::Ok().json(response)
+            HttpResponse::Ok().json(PaginatedResponse {
+                page,
+                size,
+                total,
+                items,
+            })
         }
-        Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
     }
 }

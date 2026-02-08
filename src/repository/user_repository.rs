@@ -1,3 +1,4 @@
+use diesel::dsl::count_star;
 use diesel::prelude::*;
 use uuid::Uuid;
 
@@ -33,6 +34,26 @@ impl UserRepository {
 
     pub fn find_all(conn: &mut PgConnection) -> Result<Vec<User>, diesel::result::Error> {
         users.load::<User>(conn)
+    }
+
+    pub fn find_page(
+        conn: &mut PgConnection,
+        page: i64,
+        size: i64,
+    ) -> QueryResult<(i64, Vec<User>)> {
+        let page = page.max(1);
+        let size = size.max(1);
+        let offset = (page - 1) * size;
+
+        let total: i64 = users.select(count_star()).first(conn)?;
+
+        let items = users
+            .order(id.asc())
+            .limit(size)
+            .offset(offset)
+            .load::<User>(conn)?;
+
+        Ok((total, items))
     }
 
     pub fn update_user(

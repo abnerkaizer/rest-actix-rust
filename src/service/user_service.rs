@@ -43,6 +43,12 @@ impl UserService {
         UserRepository::find_all(&mut conn)
     }
 
+    pub fn find_page(&self, pool: &DbPool, page: i64, size: i64) -> QueryResult<(i64, Vec<User>)> {
+        let mut conn = pool.get().map_err(|_| diesel::result::Error::NotFound)?;
+
+        UserRepository::find_page(&mut conn, page, size)
+    }
+
     pub fn update_user(
         &self,
         pool: &DbPool,
