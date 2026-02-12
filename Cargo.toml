@@ -23,6 +23,7 @@ dotenvy = "0.15"
 cpf_util = "0.1.1"
 uuid = { version = "1", features = ["serde", "v4"] }
 futures-util = "0.3.31"
+actix-cors = "0.7.1"
 
 [profile.release]
 opt-level = 3
