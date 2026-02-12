@@ -15,7 +15,7 @@ impl AuthService {
         email: String,
         password: String,
         secret: &str,
-    ) -> Result<String, &'static str> {
+    ) -> Result<(Uuid, String), &'static str> {
         let user = UserRepository::find_by_email(conn, &email).map_err(|_| "User not found")?;
 
         let valid =
@@ -25,8 +25,13 @@ impl AuthService {
             return Err("Invalid credentials");
         }
 
-        generate_token(*user.id(), user.role().to_string(), secret, 24)
-            .map_err(|_| "Token genation error")
+        let res = (
+            *user.id(),
+            generate_token(*user.id(), user.role().to_string(), secret, 24)
+                .map_err(|_| "Token generation error")
+                .unwrap(),
+        );
+        Ok(res)
     }
 
     pub fn register(

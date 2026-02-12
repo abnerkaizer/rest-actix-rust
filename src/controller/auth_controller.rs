@@ -26,7 +26,7 @@ pub async fn login(state: web::Data<AppState>, body: web::Json<LoginRequest>) ->
     .await;
 
     match result {
-        Ok(Ok(token)) => HttpResponse::Ok().json(serde_json::json!({ "token": token })),
+        Ok(Ok(res)) => HttpResponse::Ok().json(serde_json::json!({ "id": res.0,"token": res.1 })),
         Ok(Err(msg)) => HttpResponse::Unauthorized().json(serde_json::json!({ "error": msg })),
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
