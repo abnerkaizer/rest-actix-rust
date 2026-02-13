@@ -16,6 +16,111 @@ use crate::{
     util::app_state::AppState,
 };
 
+use crate::dto::hateoas::{Link, Links};
+use actix_web::HttpRequest;
+
+fn page_count(total: i64, size: i64) -> i64 {
+    if size <= 0 {
+        return 1;
+    }
+    let pages = (total + size - 1) / size;
+    pages.max(1)
+}
+
+fn collection_page_links(
+    req: &HttpRequest,
+    route_name: &str,
+    page: i64,
+    size: i64,
+    total: i64,
+) -> Links {
+    let mut links = Links::new();
+
+    let base = req
+        .url_for(route_name, std::iter::empty::<&str>())
+        .map(|u| u.to_string())
+        .unwrap_or_else(|_| "".to_string());
+
+    let last = page_count(total, size);
+
+    let self_href = format!("{base}?page={page}&size={size}");
+    let first_href = format!("{base}?page=1&size={size}");
+    let last_href = format!("{base}?page={last}&size={size}");
+
+    links.insert("self".into(), Link::get(self_href));
+    links.insert("first".into(), Link::get(first_href));
+    links.insert("last".into(), Link::get(last_href));
+
+    if page > 1 {
+        links.insert(
+            "prev".into(),
+            Link::get(format!("{base}?page={}&size={}", page - 1, size)),
+        );
+    }
+    if page < last {
+        links.insert(
+            "next".into(),
+            Link::get(format!("{base}?page={}&size={}", page + 1, size)),
+        );
+    }
+
+    links
+}
+
+fn user_links(req: &HttpRequest, id: Uuid, claims: &Claims) -> Links {
+    let mut links = Links::new();
+    let id_s = id.to_string();
+
+    let self_href = req
+        .url_for("user_get_by_id", [id_s.as_str()])
+        .map(|u| u.to_string())
+        .unwrap_or_else(|_| format!("/user/{id}"));
+
+    links.insert("self".into(), Link::get(self_href));
+
+    if claims.is_admin() {
+        let collection_href = req
+            .url_for("user_find_all", std::iter::empty::<&str>())
+            .map(|u| u.to_string())
+            .unwrap_or_else(|_| "/user".to_string());
+        links.insert("collection".into(), Link::get(collection_href));
+    }
+
+    let del_href = req
+        .url_for("user_delete", [id_s.as_str()])
+        .map(|u| u.to_string())
+        .unwrap_or_else(|_| format!("/user/{id}"));
+    links.insert("delete".into(), Link::delete(del_href));
+
+    let put_href = req
+        .url_for("user_update", [id_s.as_str()])
+        .map(|u| u.to_string())
+        .unwrap_or_else(|_| format!("/user/{id}"));
+    links.insert("update".into(), Link::put(put_href));
+
+    let patch_email_href = req
+        .url_for("user_patch_email", [id_s.as_str()])
+        .map(|u| u.to_string())
+        .unwrap_or_else(|_| format!("/user/email/{id}"));
+    links.insert("update_email".into(), Link::patch(patch_email_href));
+
+    let patch_pass_href = req
+        .url_for("user_patch_password", [id_s.as_str()])
+        .map(|u| u.to_string())
+        .unwrap_or_else(|_| format!("/user/password/{id}"));
+    links.insert("update_password".into(), Link::patch(patch_pass_href));
+
+    if claims.is_admin() {
+        let patch_role_href = req
+            .url_for("user_patch_role", [id_s.as_str()])
+            .map(|u| u.to_string())
+            .unwrap_or_else(|_| format!("/user/role/{id}"));
+        links.insert("update_role".into(), Link::patch(patch_role_href));
+    }
+
+    links
+}
+
 pub fn routes() -> Scope {
     web::scope("/user")
         .service(find_all_users)
@@ -28,8 +133,9 @@ pub fn routes() -> Scope {
 }
 
 /// Lista todos os usuários - apenas admin
-#[get("")]
+#[get("", name = "user_find_all")]
 async fn find_all_users(
+    req: HttpRequest,
     state: web::Data<AppState>,
     claims: Claims,
     query: web::Query<PageQuery>,
@@ -42,8 +148,7 @@ async fn find_all_users(
     let service = state.user_service().clone();
 
     let page = query.page.max(1);
-    let mut size = query.size.max(1);
-    size = size.min(100);
+    let size = query.size.max(1).min(100);
 
     let result = web::block(move || service.find_page(&pool, page, size)).await;
 
@@ -51,10 +156,14 @@ async fn find_all_users(
         Ok(Ok((total, users))) => {
             let items: Vec<UserResponse> = users
                 .into_iter()
-                .map(|user| UserResponse {
-                    id: *user.id(),
-                    email: user.email().to_string(),
-                    role: user.role(),
+                .map(|user| {
+                    let id = *user.id();
+                    UserResponse {
+                        id,
+                        email: user.email().to_string(),
+                        role: user.role(),
+                        links: user_links(&req, id, &claims),
+                    }
                 })
                 .collect();
 
@@ -63,6 +172,7 @@ async fn find_all_users(
                 size,
                 total,
                 items,
+                links: collection_page_links(&req, "user_find_all", page, size, total),
             })
         }
         _ => HttpResponse::InternalServerError().finish(),
@@ -70,8 +180,9 @@ async fn find_all_users(
 }
 
 /// Busca usuário por ID - próprio usuário ou admin
-#[get("/{id}")]
+#[get("/{id}", name = "user_get_by_id")]
 async fn get_user_by_id(
+    req: HttpRequest,
     state: web::Data<AppState>,
     path: web::Path<Uuid>,
     claims: Claims,
@@ -92,6 +203,7 @@ async fn get_user_by_id(
             id,
             email: user.email().to_string(),
             role: user.role(),
+            links: user_links(&req, id, &claims),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
@@ -99,7 +211,7 @@ async fn get_user_by_id(
 }
 
 /// Deleta usuário - apenas admin e o próprio usuário
-#[delete("/{id}")]
+#[delete("/{id}", name = "user_delete")]
 async fn delete_user(
     state: web::Data<AppState>,
     path: web::Path<Uuid>,
@@ -124,8 +236,9 @@ async fn delete_user(
 }
 
 /// Atualiza usuário completo - próprio usuário pode atualizar (exceto role) ou admin pode atualizar tudo
-#[put("/{id}")]
+#[put("/{id}", name = "user_update")]
 async fn update_user(
+    req: HttpRequest,
     state: web::Data<AppState>,
     path: web::Path<Uuid>,
     body: web::Json<UpdateUserRequest>,
@@ -182,6 +295,7 @@ async fn update_user(
             id: *user.id(),
             email: user.email().to_string(),
             role: user.role(),
+            links: user_links(&req, id, &claims),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
@@ -189,8 +303,9 @@ async fn update_user(
 }
 
 /// Atualiza email - próprio usuário ou admin
-#[patch("/email/{id}")]
+#[patch("/email/{id}", name = "user_patch_email")]
 async fn patch_user_email(
+    req: HttpRequest,
     state: web::Data<AppState>,
     path: web::Path<Uuid>,
     body: web::Json<UpdateEmailRequest>,
@@ -213,6 +328,7 @@ async fn patch_user_email(
             id: *user.id(),
             email: user.email().to_string(),
             role: user.role(),
+            links: user_links(&req, id, &claims),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
@@ -220,8 +336,9 @@ async fn patch_user_email(
 }
 
 /// Atualiza role - apenas admin
-#[patch("/role/{id}")]
+#[patch("/password/{id}", name = "user_patch_password")]
 async fn patch_user_role(
+    req: HttpRequest,
     state: web::Data<AppState>,
     path: web::Path<Uuid>,
     body: web::Json<UpdateRoleRequest>,
@@ -243,6 +360,7 @@ async fn patch_user_role(
             id: *user.id(),
             email: user.email().to_string(),
             role: user.role(),
+            links: user_links(&req, id, &claims),
         }),
         Ok(Err(diesel::result::Error::NotFound)) => HttpResponse::NotFound().finish(),
         _ => HttpResponse::InternalServerError().finish(),
@@ -250,8 +368,9 @@ async fn patch_user_role(
 }
 
 /// Atualiza senha - próprio usuário ou admin
-#[patch("/password/{id}")]
+#[patch("/role/{id}", name = "user_patch_role")]
 async fn patch_user_password(
+    req: HttpRequest,
     state: web::Data<AppState>,
     path: web::Path<Uuid>,
     body: web::Json<UpdatePasswordRequest>,
@@ -274,6 +393,7 @@ async fn patch_user_password(
             id: *user.id(),
             email: user.email().to_string(),
             role: user.role(),
+            links: user_links(&req, id, &claims),
         }),
         Ok(Err(UserServiceError::NotFound)) => HttpResponse::NotFound().finish(),
         Ok(Err(UserServiceError::HashError)) => HttpResponse::InternalServerError().finish(),

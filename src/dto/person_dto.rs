@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::dto::hateoas::Links;
+
 #[derive(Deserialize)]
 pub struct PersonRequest {
     pub name: String,
@@ -12,6 +14,9 @@ pub struct PersonResponse {
     pub id: Uuid,
     pub name: String,
     pub cpf: String,
+
+    #[serde(rename = "_links")]
+    pub links: Links,
 }
 
 #[derive(Deserialize)]
@@ -51,4 +56,7 @@ pub struct PaginatedResponse<T> {
     pub size: i64,
     pub total: i64,
     pub items: Vec<T>,
+
+    #[serde(rename = "_links")]
+    pub links: Links,
 }

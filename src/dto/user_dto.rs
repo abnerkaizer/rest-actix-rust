@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::dto::hateoas::Links;
 use crate::model::role::Role;
 
 #[derive(Deserialize)]
@@ -14,6 +15,9 @@ pub struct UserResponse {
     pub id: Uuid,
     pub email: String,
     pub role: Role,
+
+    #[serde(rename = "_links")]
+    pub links: Links,
 }
 
 #[derive(Deserialize)]
@@ -59,4 +63,7 @@ pub struct PaginatedResponse<T> {
     pub size: i64,
     pub total: i64,
     pub items: Vec<T>,
+
+    #[serde(rename = "_links")]
+    pub links: Links,
 }

@@ -25,12 +25,22 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{URL}}/person",
+              "raw": "{{URL}}/person?page=1&size=50",
               "host": [
                 "{{URL}}"
               ],
               "path": [
                 "person"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "size",
+                  "value": "50"
+                }
               ]
             }
           },
@@ -52,13 +62,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{URL}}/person/85c8900c-2c66-4b9e-9e0c-cfa3648374f2",
+              "raw": "{{URL}}/person/00bbbe05-85fb-4185-9bcc-b400604223b9",
               "host": [
                 "{{URL}}"
               ],
               "path": [
                 "person",
-                "85c8900c-2c66-4b9e-9e0c-cfa3648374f2"
+                "00bbbe05-85fb-4185-9bcc-b400604223b9"
               ]
             }
           },
@@ -238,13 +248,13 @@
               }
             },
             "url": {
-              "raw": "{{URL}}/person/85c8900c-2c66-4b9e-9e0c-cfa3648374f2",
+              "raw": "{{URL}}/person/004efe79-aebc-4ffb-a9f0-059c9797bf6d",
               "host": [
                 "{{URL}}"
               ],
               "path": [
                 "person",
-                "85c8900c-2c66-4b9e-9e0c-cfa3648374f2"
+                "004efe79-aebc-4ffb-a9f0-059c9797bf6d"
               ]
             }
           },
@@ -274,12 +284,22 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{URL}}/user",
+                  "raw": "{{URL}}/user?page=1&size=20",
                   "host": [
                     "{{URL}}"
                   ],
                   "path": [
                     "user"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    }
                   ]
                 }
               },
@@ -301,13 +321,13 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{URL}}/user/ed6b23b6-a2c4-48ba-aa8e-66ff65a2a4c2",
+                  "raw": "{{URL}}/user/54873879-1620-4a4d-9efe-f1d40970226b",
                   "host": [
                     "{{URL}}"
                   ],
                   "path": [
                     "user",
-                    "ed6b23b6-a2c4-48ba-aa8e-66ff65a2a4c2"
+                    "54873879-1620-4a4d-9efe-f1d40970226b"
                   ]
                 }
               },
@@ -491,6 +511,44 @@
                 }
               },
               "response": []
+            },
+            {
+              "name": "{{URL}}/user/role/54873879-1620-4a4d-9efe-f1d40970226b",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"role\":\"user\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{URL}}/user/role/54873879-1620-4a4d-9efe-f1d40970226b",
+                  "host": [
+                    "{{URL}}"
+                  ],
+                  "path": [
+                    "user",
+                    "role",
+                    "54873879-1620-4a4d-9efe-f1d40970226b"
+                  ]
+                }
+              },
+              "response": []
             }
           ]
         },
@@ -501,7 +559,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\":\"abner@email.com\",\n    \"password\":\"admin123\"\n}",
+              "raw": "{\n    \"email\":\"abner@gmail.com\",\n    \"password\":\"admin123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -528,51 +586,20 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Debug: Log the raw response body",
-                  "console.log(\"=== DEBUG: Post-Response Script Started ===\");",
-                  "console.log(\"Response status:\", pm.response.code);",
-                  "console.log(\"Raw response body:\", pm.response.text());",
+                  "// Parse the JSON response",
+                  "const jsonData = pm.response.json();",
                   "",
-                  "// Check if response is valid before parsing",
-                  "if (pm.response.code !== 200) {",
-                  "    console.error(\"ERROR: Response status is not 200. Status:\", pm.response.code);",
-                  "}",
+                  "// Extract the token and save it to the environment variable",
+                  "const token = jsonData.token;",
+                  "pm.environment.set(\"token\", token);",
                   "",
-                  "// Parse the JSON response with error handling",
-                  "let jsonResponse;",
-                  "try {",
-                  "    jsonResponse = pm.response.json();",
-                  "    console.log(\"Parsed JSON response:\", JSON.stringify(jsonResponse, null, 2));",
-                  "} catch (parseError) {",
-                  "    console.error(\"ERROR: Failed to parse JSON response:\", parseError.message);",
-                  "}",
-                  "",
-                  "// Check if token exists in the response",
-                  "if (jsonResponse) {",
-                  "    console.log(\"Token exists in response:\", jsonResponse.hasOwnProperty('token'));",
-                  "    console.log(\"Token value:\", jsonResponse.token);",
-                  "    console.log(\"Token type:\", typeof jsonResponse.token);",
-                  "    ",
-                  "    if (jsonResponse.token) {",
-                  "        // Set the token as a collection variable",
-                  "        pm.collectionVariables.set(\"token\", jsonResponse.token);",
-                  "        console.log(\"SUCCESS: Token set in collection variable\");",
-                  "        ",
-                  "        // Verify the variable was set",
-                  "        const verifyToken = pm.collectionVariables.get(\"token\");",
-                  "        console.log(\"Verification - Token retrieved from collection variables:\", verifyToken ? \"Yes (length: \" + verifyToken.length + \")\" : \"No\");",
-                  "    } else {",
-                  "        console.error(\"ERROR: Token is null, undefined, or empty in the response\");",
-                  "        console.log(\"Available keys in response:\", Object.keys(jsonResponse));",
-                  "    }",
-                  "} else {",
-                  "    console.error(\"ERROR: jsonResponse is null or undefined\");",
-                  "}",
-                  "",
-                  "// Debug: Check current collection variables info",
-                  "console.log(\"=== Collection Variables Debug Info ===\");",
-                  "console.log(\"All collection variables:\", JSON.stringify(pm.collectionVariables.toObject(), null, 2));",
-                  "console.log(\"=== DEBUG: Post-Response Script Completed ===\");"
+                  "// Test to verify the token was successfully saved",
+                  "pm.test(\"Token was successfully extracted and saved to environment\", function () {",
+                  "    const savedToken = pm.environment.get(\"token\");",
+                  "    pm.expect(savedToken).to.be.a(\"string\");",
+                  "    pm.expect(savedToken).to.not.be.empty;",
+                  "    pm.expect(savedToken).to.eql(token);",
+                  "});"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -615,51 +642,20 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Debug: Log the raw response body",
-                  "console.log(\"=== DEBUG: Post-Response Script Started ===\");",
-                  "console.log(\"Response status:\", pm.response.code);",
-                  "console.log(\"Raw response body:\", pm.response.text());",
+                  "// Parse the JSON response",
+                  "const jsonData = pm.response.json();",
                   "",
-                  "// Check if response is valid before parsing",
-                  "if (pm.response.code !== 200) {",
-                  "    console.error(\"ERROR: Response status is not 200. Status:\", pm.response.code);",
-                  "}",
+                  "// Extract the token and save it to the environment variable",
+                  "const token = jsonData.token;",
+                  "pm.environment.set(\"token\", token);",
                   "",
-                  "// Parse the JSON response with error handling",
-                  "let jsonResponse;",
-                  "try {",
-                  "    jsonResponse = pm.response.json();",
-                  "    console.log(\"Parsed JSON response:\", JSON.stringify(jsonResponse, null, 2));",
-                  "} catch (parseError) {",
-                  "    console.error(\"ERROR: Failed to parse JSON response:\", parseError.message);",
-                  "}",
-                  "",
-                  "// Check if token exists in the response",
-                  "if (jsonResponse) {",
-                  "    console.log(\"Token exists in response:\", jsonResponse.hasOwnProperty('token'));",
-                  "    console.log(\"Token value:\", jsonResponse.token);",
-                  "    console.log(\"Token type:\", typeof jsonResponse.token);",
-                  "    ",
-                  "    if (jsonResponse.token) {",
-                  "        // Set the token as a collection variable",
-                  "        pm.collectionVariables.set(\"token\", jsonResponse.token);",
-                  "        console.log(\"SUCCESS: Token set in collection variable\");",
-                  "        ",
-                  "        // Verify the variable was set",
-                  "        const verifyToken = pm.collectionVariables.get(\"token\");",
-                  "        console.log(\"Verification - Token retrieved from collection variables:\", verifyToken ? \"Yes (length: \" + verifyToken.length + \")\" : \"No\");",
-                  "    } else {",
-                  "        console.error(\"ERROR: Token is null, undefined, or empty in the response\");",
-                  "        console.log(\"Available keys in response:\", Object.keys(jsonResponse));",
-                  "    }",
-                  "} else {",
-                  "    console.error(\"ERROR: jsonResponse is null or undefined\");",
-                  "}",
-                  "",
-                  "// Debug: Check current collection variables info",
-                  "console.log(\"=== Collection Variables Debug Info ===\");",
-                  "console.log(\"All collection variables:\", JSON.stringify(pm.collectionVariables.toObject(), null, 2));",
-                  "console.log(\"=== DEBUG: Post-Response Script Completed ===\");"
+                  "// Test to verify the token was successfully saved",
+                  "pm.test(\"Token was successfully extracted and saved to environment\", function () {",
+                  "    const savedToken = pm.environment.get(\"token\");",
+                  "    pm.expect(savedToken).to.be.a(\"string\");",
+                  "    pm.expect(savedToken).to.not.be.empty;",
+                  "    pm.expect(savedToken).to.eql(token);",
+                  "});"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -675,7 +671,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\":\"abner@email.com\",\n    \"password\":\"admin123\"\n}",
+              "raw": "{\n    \"email\":\"abner@gmail.com\",\n    \"password\":\"admin123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
