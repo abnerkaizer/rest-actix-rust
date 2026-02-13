@@ -1,6 +1,5 @@
-use actix_cors::Cors;
 use actix_web::middleware::Logger;
-use actix_web::{App, HttpServer, http::header, web};
+use actix_web::{App, HttpServer, web};
 
 use crate::{
     AppState, auth::middleware::AuthMiddleware, config::AppConfig, controller::auth_controller,
@@ -12,20 +11,13 @@ pub async fn start_http_server(
     config: AppConfig,
     app_state: web::Data<AppState>,
 ) -> std::io::Result<()> {
-    let host = config.host();
+    let host = config.host().to_string();
     let port = config.port();
+    let cors_config = config.clone();
 
     HttpServer::new(move || {
         App::new()
-            .wrap(
-                Cors::default()
-                    .allowed_origin("http://localhost:8081")
-                    .allowed_methods(vec!["GET", "POST", "PUT", "PATCH", "DELETE"])
-                    .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
-                    .allowed_header(header::CONTENT_TYPE)
-                    .supports_credentials()
-                    .max_age(3600),
-            )
+            .wrap(cors_config.cors())
             .wrap(Logger::default())
             .app_data(app_state.clone())
             .service(
